@@ -7,8 +7,21 @@ env/
 __pycache__/
 *.py[cod]
 *.pyo
+*$py.class
 
 
+# Editor
+.vscode/
+.idea/
+
+# Variáveis de Logs
 logs/
-banco.txt
 
+# Variáveis de Bano
+banco.txt
+*.db
+*.sqlite
+*.sqlite3
+
+# Variáveis de Ambiente
+.env
