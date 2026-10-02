@@ -2,7 +2,8 @@ from app.models.enums import (
     EspecialidadeMecanico,
     CombustivelVeiculo,
     FormaPagamento,
-    StatusOrdemServico
+    StatusOrdemServico,
+    NivelCombustivel
 )
 
 from app.models.cliente import Cliente, ClienteCreate, ClienteUpdate, ClientePublic
