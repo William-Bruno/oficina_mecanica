@@ -13,6 +13,7 @@ class DiagnosticoBase(SQLModel):
     quilometragem: int = Field(ge=0, default=0, nullable=False)
     avarias_latarias: str = Field(min_length=3, max_length=150, nullable=False)
     nivel_combustivel: NivelCombustivel = Field(default=NivelCombustivel.MEDIO, nullable=False)
+    aprovado_cliente: bool = Field(default=True, nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", unique=True, nullable=False)
 
 class Diagnostico(DiagnosticoBase, table=True):
@@ -29,6 +30,7 @@ class DiagnosticoUpdate(SQLModel):
     quilometragem: int |None = None
     avarias_latarias: str |None = None
     nivel_combustivel: NivelCombustivel |None = None
+    aprovado_cliente: bool | None = None
     ordem_servico_id: int |None = None
 
 class DiagnosticoPublic(DiagnosticoBase):

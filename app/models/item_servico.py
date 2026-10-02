@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class ItemServicoBase(SQLModel):
     tempo_hora: int = Field(default=1, gt=0)
     valor_hora: float = Field(default=0.0, ge=0)
+    aprovado: bool = Field(default=True, nullable=False)
     servico_id: int = Field(foreign_key="servico.id", nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", nullable=False)
 
@@ -27,6 +28,7 @@ class ItemServicoCreate(ItemServicoBase):
 class ItemServicoUpdate(SQLModel):
     tempo_hora: int | None = None
     valor_hora: float | None = None
+    aprovado: bool | None = None
     servico_id: int | None = None
     ordem_servico_id: int | None = None
 

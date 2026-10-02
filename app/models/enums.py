@@ -19,7 +19,7 @@ class CombustivelVeiculo(str, Enum):
 class StatusOrdemServico(str, Enum):
     AGENDADA = "agendada"
     EM_ORCAMENTO = "em_orcamento"
-    EN_ANDAMENTO = "em_andamento"
+    EM_ANDAMENTO = "em_andamento"
     CONCLUIDA = "concluida"
     CANCELADA = "cancelada"
 

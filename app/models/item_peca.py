@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class ItemPecaBase(SQLModel):
     quantidade: int = Field(default=1, gt=0)
     preco_unitario: float = Field(default=0.0, ge=0)
+    aprovado: bool = Field(default=True, nullable=False)
     peca_id: int = Field(foreign_key="peca.id", nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", nullable=False)
 
@@ -27,6 +28,7 @@ class ItemPecaCreate(ItemPecaBase):
 class ItemPecaUpdate(SQLModel):
     quantidade: int | None = None
     preco_unitario: float | None = None
+    aprovado: bool | None = None
     peca_id: int | None = None
     ordem_servico_id: int | None = None
 
