@@ -28,3 +28,8 @@ class FormaPagamento(str, Enum):
     PIX = "pix"
     CREDITO = "credito"
     DEBITO = "debito"
+
+class NivelCombustivel(str, Enum):
+    ALTO = "alto"
+    MEDIO = "medio"
+    BAIXO = "baixo"

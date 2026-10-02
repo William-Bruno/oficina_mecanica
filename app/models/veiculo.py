@@ -7,6 +7,7 @@ from app.models.enums import CombustivelVeiculo
 
 if TYPE_CHECKING:
     from app.models.cliente import Cliente
+    from app.models.ordem_servico import OrdemServico
 
 class VeiculoBase(SQLModel):
     placa: str = Field(max_length=7, unique=True, index=True)
@@ -21,6 +22,7 @@ class Veiculo(VeiculoBase, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = None
     cliente: "Cliente" = Relationship(back_populates="veiculos")
+    ordens_servico: list["OrdemServico"] = Relationship(back_populates="veiculo")
 
 class VeiculoCreate(VeiculoBase):
     pass

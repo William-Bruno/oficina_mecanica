@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
+if TYPE_CHECKING:
+    from app.models.item_peca import ItemPeca
 
 class PecaBase(SQLModel):
     nome: str = Field(min_length=3, max_length=120, index=True)
@@ -10,6 +13,7 @@ class Peca(PecaBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = None
+    itens_pecas: list["ItemPeca"] = Relationship(back_populates="peca")
 
 class PecaCreate(PecaBase):
     pass

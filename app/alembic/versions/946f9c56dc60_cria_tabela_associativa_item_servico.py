@@ -1,8 +1,8 @@
-"""cria_tabela_servico
+"""cria_tabela_associativa_item_servico
 
-Revision ID: 447b7fde96b3
-Revises: f0d36d993e55
-Create Date: 2026-10-02 14:55:00.390623
+Revision ID: 946f9c56dc60
+Revises: 31681633a578
+Create Date: 2026-10-02 18:08:33.610178
 
 """
 from typing import Sequence, Union
@@ -13,8 +13,8 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = '447b7fde96b3'
-down_revision: Union[str, Sequence[str], None] = 'f0d36d993e55'
+revision: str = '946f9c56dc60'
+down_revision: Union[str, Sequence[str], None] = '31681633a578'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -1,8 +1,10 @@
+from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel, Relationship
 
-from app.models.veiculo import Veiculo
+if TYPE_CHECKING:
+    from app.models.veiculo import Veiculo
 
 class ClienteBase(SQLModel):
     nome: str = Field(min_length=3, max_length=150, index=True)

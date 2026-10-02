@@ -1,6 +1,10 @@
+from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
+
+if TYPE_CHECKING:
+    from app.models.item_servico import ItemServico
 
 class ServicoBase(SQLModel):
     descricao: str = Field(min_length=3, max_length=250, index=True)
@@ -10,6 +14,7 @@ class Servico(ServicoBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = None
+    itens_servicos: list["ItemServico"] = Relationship(back_populates="servico")
 
 class ServicoCreate(ServicoBase):
     pass
