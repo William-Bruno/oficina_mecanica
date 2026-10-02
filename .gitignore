@@ -9,5 +9,6 @@ __pycache__/
 *.pyo
 
 
+logs/
 banco.txt
 
