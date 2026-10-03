@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel, Relationship
+from app.models.paginacao import Paginacao
 
 if TYPE_CHECKING:
     from app.models.item_servico import ItemServico
@@ -27,3 +28,8 @@ class ServicoPublic(ServicoBase):
     id: int
     created_at: datetime 
     updated_at: datetime
+
+class ServicoPage(SQLModel):
+    dados: list[ServicoPublic]
+    paginacao: Paginacao
+

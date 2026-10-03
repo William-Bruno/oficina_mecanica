@@ -32,7 +32,7 @@ def listar_mecanicos(
     )
 
 
-@router.get("/{ciente_id}", response_model=MecanicoPublic, status_code=status.HTTP_200_OK, summary="Bscar mecanico pelo ID")
+@router.get("/{mecanico_id}", response_model=MecanicoPublic, status_code=status.HTTP_200_OK, summary="Bscar mecanico pelo ID")
 def buscar_mecanico(mecanico_id:int, service:MecanicoService=Depends(get_mecanico_service)):
     return service.buscar_por_id(mecanico_id)
 

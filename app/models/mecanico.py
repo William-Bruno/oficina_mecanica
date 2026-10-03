@@ -32,7 +32,6 @@ class MecanicoPublic(MecanicoBase):
     created_at: datetime 
     updated_at: datetime
 
-
 class MecanicoPage(SQLModel):
     dados: list[MecanicoPublic]
     paginacao: Paginacao

@@ -2,6 +2,9 @@ from typing import TYPE_CHECKING
 from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel, Relationship
+
+from app.models.paginacao import Paginacao
+
 if TYPE_CHECKING:
     from app.models.item_peca import ItemPeca
 
@@ -26,3 +29,7 @@ class PecaPublic(PecaBase):
     id: int
     created_at: datetime 
     updated_at: datetime
+
+class PecaPage(SQLModel):
+    dados: list[PecaPublic]
+    paginacao: Paginacao
