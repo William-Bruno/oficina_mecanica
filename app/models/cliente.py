@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel, Relationship
 
+from app.models.paginacao import MetadadosPaginacao
+
 if TYPE_CHECKING:
     from app.models.veiculo import Veiculo
 
@@ -15,7 +17,7 @@ class ClienteBase(SQLModel):
 class Cliente(ClienteBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     veiculos: list["Veiculo"] = Relationship(back_populates="cliente")
 
 class ClienteCreate(ClienteBase):
@@ -29,4 +31,8 @@ class ClienteUpdate(SQLModel):
 class ClientePublic(ClienteBase):
     id: int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime
+
+class PaginaCliente(SQLModel):
+    dados: list[ClientePublic]
+    paginacao: MetadadosPaginacao

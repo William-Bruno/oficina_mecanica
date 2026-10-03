@@ -80,7 +80,7 @@ def seed_database() -> None:
             ("TGB9Y00", "Honda", "HR-V 1.8 EXL", 2020, CombustivelVeiculo.FLEX, clientes[5].id),
             ("YHN1U22", "Ford", "EcoSport 1.5 Titanium", 2019, CombustivelVeiculo.FLEX, clientes[6].id),
             ("UJM3I44", "Renault", "Duster 1.6 Iconic", 2021, CombustivelVeiculo.FLEX, clientes[7].id),
-            ("IKOL5P66", "Jeep", "Compass 1.3 Turbo", 2022, CombustivelVeiculo.FLEX, clientes[8].id),
+            ("IKOL5P6", "Jeep", "Compass 1.3 Turbo", 2022, CombustivelVeiculo.FLEX, clientes[8].id),
             ("OLP7K88", "Peugeot", "208 1.6 Griffe", 2022, CombustivelVeiculo.FLEX, clientes[9].id),
         ]
 
