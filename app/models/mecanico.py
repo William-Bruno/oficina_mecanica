@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from sqlmodel import Field, SQLModel, Relationship
 
 from app.models.enums import EspecialidadeMecanico
+from app.models.paginacao import Paginacao
 
 if TYPE_CHECKING:
     from app.models.ordem_servico import OrdemServico
@@ -16,7 +17,7 @@ class MecanicoBase(SQLModel):
 class Mecanico(MecanicoBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     ordens_servico: list["OrdemServico"] = Relationship(back_populates="mecanico")
 
 class MecanicoCreate(MecanicoBase):
@@ -29,4 +30,9 @@ class MecanicoUpdate(SQLModel):
 class MecanicoPublic(MecanicoBase):
     id: int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime
+
+
+class MecanicoPage(SQLModel):
+    dados: list[MecanicoPublic]
+    paginacao: Paginacao

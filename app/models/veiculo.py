@@ -20,7 +20,7 @@ class VeiculoBase(SQLModel):
 class Veiculo(VeiculoBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     cliente: "Cliente" = Relationship(back_populates="veiculos")
     ordens_servico: list["OrdemServico"] = Relationship(back_populates="veiculo")
 
@@ -38,4 +38,4 @@ class VeiculoUpdate(SQLModel):
 class VeiculoPublic(VeiculoBase):
     id: int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime

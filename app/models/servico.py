@@ -13,7 +13,7 @@ class ServicoBase(SQLModel):
 class Servico(ServicoBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     itens_servicos: list["ItemServico"] = Relationship(back_populates="servico")
 
 class ServicoCreate(ServicoBase):
@@ -26,4 +26,4 @@ class ServicoUpdate(SQLModel):
 class ServicoPublic(ServicoBase):
     id: int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime

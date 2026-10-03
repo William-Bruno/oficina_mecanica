@@ -23,7 +23,7 @@ class OrdemServicoBase(SQLModel):
 class OrdemServico(OrdemServicoBase, table=True):
     id: int = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     veiculo: "Veiculo" = Relationship(back_populates="ordens_servico")
     mecanico: "Mecanico" = Relationship(back_populates="ordens_servico")
     itens_servicos: list["ItemServico"] = Relationship(back_populates="ordem_servico")
@@ -47,6 +47,6 @@ class OrdemServicoUpdate(SQLModel):
 class OrdemServicoPublic(OrdemServicoBase):
     id: int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime
 
 

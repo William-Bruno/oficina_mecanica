@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel, Relationship
 
-from app.models.paginacao import MetadadosPaginacao
+from app.models.paginacao import Paginacao
 
 if TYPE_CHECKING:
     from app.models.veiculo import Veiculo
@@ -33,6 +33,6 @@ class ClientePublic(ClienteBase):
     created_at: datetime 
     updated_at: datetime
 
-class PaginaCliente(SQLModel):
+class ClientePage(SQLModel):
     dados: list[ClientePublic]
-    paginacao: MetadadosPaginacao
+    paginacao: Paginacao

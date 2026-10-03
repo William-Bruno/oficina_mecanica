@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
-from app.models.cliente import Cliente, ClienteCreate,ClienteUpdate, PaginaCliente
-from app.models.paginacao import MetadadosPaginacao
+from app.models.cliente import Cliente, ClienteCreate,ClienteUpdate, ClientePage
+from app.models.paginacao import Paginacao
 from app.repository.cliente_repository import ClienteRepository
 
 class ClienteService:
@@ -26,7 +26,7 @@ class ClienteService:
         tamanho_pagina:int=10,
         nome:str|None = None,
         email:str|None=None
-    ) -> PaginaCliente:
+    ) -> ClientePage:
         """Lista paginado, calcula os metadados e retorna PaginaCliente"""
         clientes, total_registros = self.repository.get_paginado(
             pagina=pagina,
@@ -40,9 +40,9 @@ class ClienteService:
         else:
             total_paginas = 0
 
-        return PaginaCliente(
+        return ClientePage(
             dados=clientes,
-            paginacao=MetadadosPaginacao(
+            paginacao=Paginacao(
                 total_registros=total_registros,
                 total_paginas=total_paginas,
                 pagina_atual=pagina,
@@ -85,7 +85,7 @@ class ClienteService:
             self.repository.rollback()
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Erro de integridade ao cadastrar cliente"
+                detail="Erro de integridade ao atualizar cliente"
             )
     
     def remover(self, cliente_id: int) -> dict[str, str]:

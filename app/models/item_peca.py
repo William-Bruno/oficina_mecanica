@@ -17,7 +17,7 @@ class ItemPecaBase(SQLModel):
 class ItemPeca(ItemPecaBase, table=True):
     id:int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     peca: "Peca" = Relationship(back_populates="itens_pecas")
     ordem_servico: "OrdemServico" = Relationship(back_populates="itens_pecas")
 
@@ -35,4 +35,4 @@ class ItemPecaUpdate(SQLModel):
 class ItemPecaPublic(ItemPecaBase):
     id: int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime

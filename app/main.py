@@ -3,7 +3,7 @@ from app.core.logging_config import logger
 from app.core.logging_middleware import logging_middleware
 from app.core.error_middleware import error_middleware
 
-from app.routes import clientes
+from app.routes import clientes, mecanicos
 
 app = FastAPI(
     title="API de Oficina Mecanica",
@@ -18,3 +18,4 @@ app.middleware("http")(logging_middleware)
 logger.info("API da Oficina Mecânica iniciada!")
 
 app.include_router(clientes.router)
+app.include_router(mecanicos.router)

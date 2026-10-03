@@ -29,13 +29,13 @@ class ClienteRepository:
 
         # Filtro nome
         if nome:
-            filtro_nome = Cliente.nome.ilike(f"%{nome}")
+            filtro_nome = Cliente.nome.ilike(f"%{nome}%")
             consulta = consulta.where(filtro_nome)
             consulta_total = consulta_total.where(filtro_nome)
 
         # Filtro email
         if email:
-            filtro_email = Cliente.email.ilike(f"%{email}")
+            filtro_email = Cliente.email.ilike(f"%{email}%")
             consulta = consulta.where(filtro_email)
             consulta_total = consulta_total.where(filtro_email)
 

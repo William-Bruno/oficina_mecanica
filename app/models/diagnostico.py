@@ -19,7 +19,7 @@ class DiagnosticoBase(SQLModel):
 class Diagnostico(DiagnosticoBase, table=True):
     id:int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
     ordem_servico: "OrdemServico" = Relationship(back_populates="diagnostico")
 
 class DiagnosticoCreate(DiagnosticoBase):
@@ -36,4 +36,4 @@ class DiagnosticoUpdate(SQLModel):
 class DiagnosticoPublic(DiagnosticoBase):
     id:int
     created_at: datetime 
-    updated_at: datetime | None = None
+    updated_at: datetime
