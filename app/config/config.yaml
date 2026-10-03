@@ -2,7 +2,8 @@ app:
   name: "OFICINA MECANICA"
 
 paths:
-  log_path: "logs/sistema.log"
+  log_sistema_path: "logs/sistema/app.log"
+  log_banco_path: "logs/banco/sqlalchemy.log"
 
 logging:
   version: 1
@@ -19,27 +20,42 @@ logging:
       formatter: detailed
       stream: ext://sys.stdout
 
-    file:
+    file_sistema:
       class: logging.handlers.RotatingFileHandler
       level: DEBUG
       formatter: detailed
-      filename: sistema.log
+      filename: app.log
       maxBytes: 5242880
       backupCount: 5
       encoding: utf-8
+    
+    file_banco:
+      class: logging.handlers.RotatingFileHandler
+      level: INFO
+      formatter: detailed
+      filename: sqlalchemy.log
+      maxBytes: 5242880
+      backupCount: 5
+      encoding: utf-8
+
 
   loggers:
     app:  # o nome real do logger vem de app.name (veja logging_config.py)
       level: DEBUG
       handlers:
         - console
-        - file
+        - file_sistema
       propagate: false
 
-    sqlalchemy.engine:
+    sqlalchemy:
       level: WARNING
+      handlers: []
+      propagate: false
+
+    sqlalchemy.engine.Engine:
+      level: INFO
       handlers:
-        - file
+        - file_banco
       propagate: false
 
   root:
