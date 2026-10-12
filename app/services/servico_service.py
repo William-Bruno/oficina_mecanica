@@ -1,5 +1,6 @@
-from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
+
+from app.core.exceptions import ViolacaoChaveEstrangeiraException, RecursoNaoEncontradoException
 
 from app.models.servico import Servico, ServicoCreate, ServicoUpdate, ServicoPage
 from app.models.paginacao import Paginacao
@@ -13,10 +14,7 @@ class ServicoService:
     def buscar_por_id(self, servico_id:int) -> Servico:
         servico = self.repository.get_by_id(servico_id)
         if not servico:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Servico com ID {servico_id} não encontrado"
-            )
+            raise RecursoNaoEncontradoException(f"Servico com ID {servico_id} não encontrado")
         return servico
 
     def listar_paginado(self, pagina:int=1,tamanho_pagina:int=10,descricao:str|None=None,) -> ServicoPage:
@@ -45,10 +43,7 @@ class ServicoService:
         try:
             return self.repository.create(dados)
         except IntegrityError:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Erro de integridade ao cadastrar o mecanico"
-            )
+            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao cadastrar o mecanico")
 
     def atualizar(self, servico_id:int, dados:ServicoUpdate) -> Servico:
         dados_id = self.buscar_por_id(servico_id)
@@ -56,10 +51,7 @@ class ServicoService:
             return self.repository.update(dados_id, dados)
         except IntegrityError:
             self.repository.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Erro de intgridade ao atualizar servico"
-            )
+            raise ViolacaoChaveEstrangeiraException("Erro de intgridade ao atualizar servico")
 
     def remover(self, servico_id: int) -> dict[str, str]:
         dados_id = self.buscar_por_id(servico_id)
@@ -67,7 +59,4 @@ class ServicoService:
             self.repository.delete(dados_id)
             return{"message":"Servico removido com sucesso"}
         except IntegrityError:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Servio possui items de servico e não pode ser removido"
-            )
+            raise ViolacaoChaveEstrangeiraException("Servio possui items de servico e não pode ser removido")

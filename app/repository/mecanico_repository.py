@@ -8,6 +8,12 @@ class MecanicoRepository:
     def __init__(self, session:Session):
         self.session = session
 
+    def _salvar(self, objeto):
+        self.session.add(objeto)
+        self.session.commit()
+        self.session.refresh(objeto)
+        return objeto
+
     def get_by_id(self, mecanico_id:int) -> Mecanico | None:
         return self.session.get(Mecanico, mecanico_id)
 
@@ -46,18 +52,12 @@ class MecanicoRepository:
 
     def create(self,dados:MecanicoCreate)->Mecanico:
         mecanico = Mecanico.model_validate(dados)
-        self.session.add(mecanico)
-        self.session.commit()
-        self.session.refresh(mecanico)
-        return mecanico
+        return self._salvar(mecanico)
 
     def update(self, dados_db: Mecanico, dados:MecanicoUpdate) -> Mecanico:
         dados_atualizados = dados.model_dump(exclude_unset=True)
         dados_db.sqlmodel_update(dados_atualizados)
-        self.session.add(dados_db)
-        self.session.commit()
-        self.session.refresh(dados_db)
-        return dados_db
+        return self._salvar(dados_db)
 
     def delete(self, dados_db:Mecanico) -> None:
         self.session.delete(dados_db)

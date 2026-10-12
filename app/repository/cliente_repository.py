@@ -8,6 +8,12 @@ class ClienteRepository:
     def __init__(self, session:Session):
         self.session = session
 
+    def _salvar(self, objeto):
+        self.session.add(objeto)
+        self.session.commit()
+        self.session.refresh(objeto)
+        return objeto
+
     def get_by_id(self, cliente_id: int) -> Cliente | None:
         """Busca um clinente pelo ID """
         return self.session.get(Cliente, cliente_id)
@@ -52,19 +58,13 @@ class ClienteRepository:
     def create(self, dados: ClienteCreate)->Cliente:
         """Cria e adiciona um cliente no banco"""
         cliente = Cliente.model_validate(dados)
-        self.session.add(cliente)
-        self.session.commit()
-        self.session.refresh(cliente)
-        return cliente
+        return self._salvar(dados)
 
     def update(self, dados_db: Cliente, dados: ClienteUpdate) -> Cliente:
         """Atualiza os campos do cliente no banco"""
         dados_atualizados = dados.model_dump(exclude_unset=True)
         dados_db.sqlmodel_update(dados_atualizados)
-        self.session.add(dados_db)
-        self.session.commit()
-        self.session.refresh(dados_db)
-        return dados_db
+        return self._salvar(dados_db)
         
     def delete(self, dados_db:Cliente) -> None:
         """Remover cliente o banco"""

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session
 
@@ -8,21 +10,24 @@ from app.services.mecanico_service import MecanicoService
 
 router = APIRouter(prefix="/mecanicos", tags=["Mecanicos"])
 
+
 def get_mecanico_service(session: Session = Depends(get_session)) -> MecanicoService:
     repository = MecanicoRepository(session)
     return MecanicoService(repository)
 
+ServiceDepends = Annotated[MecanicoService, Depends(get_mecanico_service)]
+
 @router.post("/", response_model=MecanicoPublic, status_code=status.HTTP_201_CREATED, summary="Cadastrar um mecanicos")
-def criar_mecanico(dados: MecanicoCreate, service: MecanicoService = Depends(get_mecanico_service)):
+def criar_mecanico(dados: MecanicoCreate, service: ServiceDepends):
     return service.criar(dados)
 
 @router.get("/", response_model=MecanicoPage, status_code=status.HTTP_200_OK, summary="Listar todos os mecanicos")
 def listar_mecanicos(
+    service: ServiceDepends,
     pagina: int = Query(1, ge=1, description="Número da página"),
     tamanho_pagina: int = Query(10,g1=1, len=100, description="Quantidade de registros por página"),
     nome:str = Query(default=None, description="Filtrar por nome"),
     especialidade: str = Query(default=None, description="Filtrar por especialidade"),
-    service: MecanicoService = Depends(get_mecanico_service),
 ):
     return service.listar_paginado(
         pagina=pagina,
@@ -33,15 +38,15 @@ def listar_mecanicos(
 
 
 @router.get("/{mecanico_id}", response_model=MecanicoPublic, status_code=status.HTTP_200_OK, summary="Bscar mecanico pelo ID")
-def buscar_mecanico(mecanico_id:int, service:MecanicoService=Depends(get_mecanico_service)):
+def buscar_mecanico(mecanico_id:int, service:ServiceDepends):
     return service.buscar_por_id(mecanico_id)
 
 
 @router.patch("/{mecanico_id}", status_code=status.HTTP_201_CREATED, summary="Atualizar dados do Mecanico")
-def atualizar_mecanico(mecanico_id:int, dados:MecanicoUpdate, service:MecanicoService=Depends(get_mecanico_service)):
+def atualizar_mecanico(mecanico_id:int, dados:MecanicoUpdate, service:ServiceDepends):
     return service.atualizar(mecanico_id,dados)
 
 
 @router.delete("/{mecanico_id}", status_code=status.HTTP_200_OK, summary="Remover um Mecanico")
-def remover_mecanico(mecanico_id:int, service:MecanicoService=Depends(get_mecanico_service)):
+def remover_mecanico(mecanico_id:int, service:ServiceDepends):
     return service.remover(mecanico_id)

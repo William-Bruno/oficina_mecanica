@@ -1,5 +1,6 @@
-from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
+
+from app.core.exceptions import ViolacaoChaveEstrangeiraException, CampoDuplicadoException, RecursoNaoEncontradoException
 
 from app.models.cliente import Cliente, ClienteCreate,ClienteUpdate, ClientePage
 from app.models.paginacao import Paginacao
@@ -10,14 +11,16 @@ class ClienteService:
     def __init__(self, repository: ClienteRepository):
         self.repository = repository
 
+    def _validar_cliente_email(self, email:str) -> None:
+        existe = self.repository.get_by_email(email)
+        if existe:
+            raise CampoDuplicadoException("Já existe um cliente cadastrado com este e-mail")
+
     def buscar_por_id(self, cliente_id: int) -> Cliente:
         """busca por id, retorna excecao"""
         cliente = self.repository.get_by_id(cliente_id)
         if not cliente:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Cliente com ID{cliente_id} não econtrado"
-            )
+            raise RecursoNaoEncontradoException(f"Cliente com ID{cliente_id} não encontrado")
         return cliente
     
     def listar_paginado(
@@ -53,40 +56,24 @@ class ClienteService:
     def criar(self, dados:ClienteCreate) -> Cliente:
         """valida email e cria um noco cliente"""
         if dados.email:
-            existe = self.repository.get_by_email(dados.email)
-            if existe:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Já existe um cliente cadastrado com este e-mail"
-                )
+            self._validar_cliente_email(dados.email)
         try:
             return self.repository.create(dados)
         except IntegrityError:
             self.repository.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Erro de integridade ao cadastrar cliente"
-            )
+            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao cadastrar cliente")
 
     def atualizar(self, cliente_id:int, dados:ClienteUpdate) -> Cliente:
         """busca o cliente, valida se existe e a duplicidade do email"""
         dados_db = self.buscar_por_id(cliente_id)
 
         if dados.email and dados.email != dados_db.email:
-            existe = self.repository.get_by_email(dados.email)
-            if existe:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Já existe outro cliente cadastrado com este e-mail"
-                )
+            self._validar_cliente_email(dados.email)
         try:
             return self.repository.update(dados_db,dados)
         except IntegrityError:
             self.repository.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Erro de integridade ao atualizar cliente"
-            )
+            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao atualizar cliente")
     
     def remover(self, cliente_id: int) -> dict[str, str]:
         """buscar o cliente e tenta remover"""
@@ -97,7 +84,4 @@ class ClienteService:
             return {"message": "Cliente removido com sucesso"}
         except IntegrityError:
             self.repository.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"Cliente possui veicuos ou ordens de servico e não pode ser removido"
-            )
+            raise ViolacaoChaveEstrangeiraException("Cliente possui veicuos ou ordens de servico e não pode ser removido")

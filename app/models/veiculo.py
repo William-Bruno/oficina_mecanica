@@ -1,9 +1,11 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel, Relationship
 
 from app.models.enums import CombustivelVeiculo
+from app.models.paginacao import Paginacao
+from app.models.cliente import ClientePublic
 
 if TYPE_CHECKING:
     from app.models.cliente import Cliente
@@ -39,3 +41,10 @@ class VeiculoPublic(VeiculoBase):
     id: int
     created_at: datetime 
     updated_at: datetime
+
+class VeiculoClientePublic(VeiculoPublic):
+    cliente: Optional[ClientePublic] = None
+
+class VeiculoPage(SQLModel):
+    dados: list[VeiculoPublic]
+    paginacao: Paginacao

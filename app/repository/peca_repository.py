@@ -8,6 +8,12 @@ class PecaRepository:
     def __init__(self, session:Session):
         self.session = session
 
+    def _salvar(self, objeto):
+        self.session.add(objeto)
+        self.session.commit()
+        self.session.refresh(objeto)
+        return objeto
+
     def get_by_id(self, peca_id:int) -> Peca | None:
         return self.session.get(Peca, peca_id)
 
@@ -35,18 +41,12 @@ class PecaRepository:
 
     def create(self,dados:PecaCreate)->Peca:
         peca = Peca.model_validate(dados)
-        self.session.add(peca)
-        self.session.commit()
-        self.session.refresh(peca)
-        return peca
+        return self._salvar(peca)
 
     def update(self, dados_db: Peca, dados:PecaUpdate) -> Peca:
         dados_atualizados = dados.model_dump(exclude_unset=True)
         dados_db.sqlmodel_update(dados_atualizados)
-        self.session.add(dados_db)
-        self.session.commit()
-        self.session.refresh(dados_db)
-        return dados_db
+        return self._salvar(dados_db)
 
     def delete(self, dados_db:Peca) -> None:
         self.session.delete(dados_db)

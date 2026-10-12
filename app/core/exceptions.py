@@ -20,13 +20,13 @@ class RecursoNaoEncontradoException(AppError):
     msg = "Recurso não encontrado"
 
 
-class EntidadeDuplicadaException(AppError):
+class CampoDuplicadoException(AppError):
     """Chave única duplicada"""
     status_code = 409
     msg = "Dado já existe no sistema"
 
 
-class AssociacaoInvalidaException(AppError):
+class ViolacaoChaveEstrangeiraException(AppError):
     """Violação de FK"""
     status_code = 409
     msg = "Problemas com associações entre chaves das entidades"

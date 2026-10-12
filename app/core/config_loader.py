@@ -1,6 +1,6 @@
 from pathlib import Path
 import yaml
-from app.core.error import ConfigError
+from app.core.exceptions import ConfigError
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CONFIG_FILE = BASE_DIR / "config" / "config.yaml"

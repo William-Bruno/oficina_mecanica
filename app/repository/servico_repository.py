@@ -8,6 +8,12 @@ class ServicoRepository:
     def __init__(self, session:Session):
         self.session = session
 
+    def _salvar(self, objeto):
+        self.session.add(objeto)
+        self.session.commit()
+        self.session.refresh(objeto)
+        return objeto
+
     def get_by_id(self, servico_id:int) -> Servico | None:
         return self.session.get(Servico, servico_id)
 
@@ -35,18 +41,12 @@ class ServicoRepository:
 
     def create(self,dados:ServicoCreate)->Servico:
         servico = Servico.model_validate(dados)
-        self.session.add(servico)
-        self.session.commit()
-        self.session.refresh(servico)
-        return servico
+        return self._salvar(servico)
 
     def update(self, dados_db: Servico, dados:ServicoUpdate) -> Servico:
         dados_atualizados = dados.model_dump(exclude_unset=True)
         dados_db.sqlmodel_update(dados_atualizados)
-        self.session.add(dados_db)
-        self.session.commit()
-        self.session.refresh(dados_db)
-        return dados_db
+        return self._salvar(dados_db)
 
     def delete(self, dados_db:Servico) -> None:
         self.session.delete(dados_db)

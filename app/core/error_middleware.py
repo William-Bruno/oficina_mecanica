@@ -1,7 +1,7 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
-from app.core.error import AppError
+from app.core.exceptions import AppError
 from app.core.logging_config import logger
 
 MSG_GENERICA = "Erro interno no servidor"
