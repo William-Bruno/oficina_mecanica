@@ -37,6 +37,7 @@ class VeiculoUpdate(SQLModel):
     ano: int | None = None
     combustivel: CombustivelVeiculo | None = None
     cliente_id: int | None = None
+    quilometragem: int | None = None
 
 class VeiculoPublic(VeiculoBase):
     id: int

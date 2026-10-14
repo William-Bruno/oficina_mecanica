@@ -26,10 +26,10 @@ def seed_database() -> None:
         # 0. Verifica se o banco já possui dados
         existing_cliente = session.exec(select(Cliente)).first()
         if existing_cliente:
-            print("Bando de dados já alimentado.")
+            print("Banco de dados já alimentado.")
             return
 
-        print("Semente iniciada")
+        print("Semente iniciada...")
 
         now = datetime.now(timezone.utc)
 
@@ -61,32 +61,34 @@ def seed_database() -> None:
         # ----------------------------------------------------------------------
         # 2. VEÍCULOS (20 registros distribuídos entre os clientes)
         # ----------------------------------------------------------------------
+        # Adicionado o campo "quilometragem" no final da tupla sincronizado com os diagnósticos
         veiculos_data = [
-            ("ABC1D23", "Chevrolet", "Onix 1.0 Turbo", 2022, CombustivelVeiculo.FLEX, clientes[0].id),
-            ("XYZ9K87", "Toyota", "Corolla 2.0 Flex", 2021, CombustivelVeiculo.FLEX, clientes[1].id),
-            ("KGB4E55", "Volkswagen", "Polo 1.0 TSI", 2023, CombustivelVeiculo.FLEX, clientes[2].id),
-            ("JHG7F88", "Fiat", "Argo 1.3 Drive", 2020, CombustivelVeiculo.FLEX, clientes[3].id),
-            ("MNB3H22", "Hyundai", "HB20 1.0 Evolution", 2021, CombustivelVeiculo.FLEX, clientes[4].id),
-            ("POU8Y11", "Honda", "Civic 2.0 EXL", 2019, CombustivelVeiculo.GASOLINA, clientes[5].id),
-            ("QWE5R44", "Ford", "Ka 1.5 SE", 2018, CombustivelVeiculo.FLEX, clientes[6].id),
-            ("RTY6U77", "Renault", "Kwid 1.0 Zen", 2022, CombustivelVeiculo.FLEX, clientes[7].id),
-            ("UIO9P00", "Jeep", "Renegade 1.8 Longitude", 2020, CombustivelVeiculo.FLEX, clientes[8].id),
-            ("ASD2F33", "Nissan", "Kicks 1.6 SV", 2021, CombustivelVeiculo.FLEX, clientes[9].id),
-            ("ZXC4V55", "Chevrolet", "Tracker 1.2 Turbo", 2023, CombustivelVeiculo.FLEX, clientes[0].id),
-            ("QAZ1W22", "Toyota", "Yaris Hatch 1.5", 2022, CombustivelVeiculo.FLEX, clientes[1].id),
-            ("WSX3E44", "Volkswagen", "Virtus 1.6 MSI", 2020, CombustivelVeiculo.FLEX, clientes[2].id),
-            ("EDC5R66", "Fiat", "Strada 1.3 Endurance", 2022, CombustivelVeiculo.FLEX, clientes[3].id),
-            ("RFV7T88", "Hyundai", "Creta 2.0 Ultimate", 2021, CombustivelVeiculo.FLEX, clientes[4].id),
-            ("TGB9Y00", "Honda", "HR-V 1.8 EXL", 2020, CombustivelVeiculo.FLEX, clientes[5].id),
-            ("YHN1U22", "Ford", "EcoSport 1.5 Titanium", 2019, CombustivelVeiculo.FLEX, clientes[6].id),
-            ("UJM3I44", "Renault", "Duster 1.6 Iconic", 2021, CombustivelVeiculo.FLEX, clientes[7].id),
-            ("IKOL5P6", "Jeep", "Compass 1.3 Turbo", 2022, CombustivelVeiculo.FLEX, clientes[8].id),
-            ("OLP7K88", "Peugeot", "208 1.6 Griffe", 2022, CombustivelVeiculo.FLEX, clientes[9].id),
+            ("ABC1D23", "Chevrolet", "Onix 1.0 Turbo", 2022, CombustivelVeiculo.FLEX, clientes[0].id, 35200),
+            ("XYZ9K87", "Toyota", "Corolla 2.0 Flex", 2021, CombustivelVeiculo.FLEX, clientes[1].id, 68100),
+            ("KGB4E55", "Volkswagen", "Polo 1.0 TSI", 2023, CombustivelVeiculo.FLEX, clientes[2].id, 52400),
+            ("JHG7F88", "Fiat", "Argo 1.3 Drive", 2020, CombustivelVeiculo.FLEX, clientes[3].id, 41000),
+            ("MNB3H22", "Hyundai", "HB20 1.0 Evolution", 2021, CombustivelVeiculo.FLEX, clientes[4].id, 31500),
+            ("POU8Y11", "Honda", "Civic 2.0 EXL", 2019, CombustivelVeiculo.GASOLINA, clientes[5].id, 79000),
+            ("QWE5R44", "Ford", "Ka 1.5 SE", 2018, CombustivelVeiculo.FLEX, clientes[6].id, 18900),
+            ("RTY6U77", "Renault", "Kwid 1.0 Zen", 2022, CombustivelVeiculo.FLEX, clientes[7].id, 62000),
+            ("UIO9P00", "Jeep", "Renegade 1.8 Longitude", 2020, CombustivelVeiculo.FLEX, clientes[8].id, 50100),
+            ("ASD2F33", "Nissan", "Kicks 1.6 SV", 2021, CombustivelVeiculo.FLEX, clientes[9].id, 84000),
+            # Veículos extras com quilometragem condizente com o ano
+            ("ZXC4V55", "Chevrolet", "Tracker 1.2 Turbo", 2023, CombustivelVeiculo.FLEX, clientes[0].id, 15000),
+            ("QAZ1W22", "Toyota", "Yaris Hatch 1.5", 2022, CombustivelVeiculo.FLEX, clientes[1].id, 25000),
+            ("WSX3E44", "Volkswagen", "Virtus 1.6 MSI", 2020, CombustivelVeiculo.FLEX, clientes[2].id, 55000),
+            ("EDC5R66", "Fiat", "Strada 1.3 Endurance", 2022, CombustivelVeiculo.FLEX, clientes[3].id, 28000),
+            ("RFV7T88", "Hyundai", "Creta 2.0 Ultimate", 2021, CombustivelVeiculo.FLEX, clientes[4].id, 42000),
+            ("TGB9Y00", "Honda", "HR-V 1.8 EXL", 2020, CombustivelVeiculo.FLEX, clientes[5].id, 60000),
+            ("YHN1U22", "Ford", "EcoSport 1.5 Titanium", 2019, CombustivelVeiculo.FLEX, clientes[6].id, 75000),
+            ("UJM3I44", "Renault", "Duster 1.6 Iconic", 2021, CombustivelVeiculo.FLEX, clientes[7].id, 38000),
+            ("IKOL5P6", "Jeep", "Compass 1.3 Turbo", 2022, CombustivelVeiculo.FLEX, clientes[8].id, 22000),
+            ("OLP7K88", "Peugeot", "208 1.6 Griffe", 2022, CombustivelVeiculo.FLEX, clientes[9].id, 21000),
         ]
 
         veiculos = [
-            Veiculo(placa=p, marca=m, modelo=mod, ano=a, combustivel=c, cliente_id=cid)
-            for p, m, mod, a, c, cid in veiculos_data
+            Veiculo(placa=p, marca=m, modelo=mod, ano=a, combustivel=c, cliente_id=cid, quilometragem=km)
+            for p, m, mod, a, c, cid, km in veiculos_data
         ]
         session.add_all(veiculos)
         session.commit()
@@ -251,26 +253,26 @@ def seed_database() -> None:
         # 7. ITENS DE SERVIÇO (20 itens vinculados às OS)
         # ----------------------------------------------------------------------
         itens_servico_data = [
-            (1, servicos[0].preco, False, servicos[0].id, ordens[0].id),   # OS 1: Troca óleo
-            (1, servicos[11].preco,False, servicos[11].id, ordens[1].id), # OS 2: Troca amortecedor
-            (1, servicos[18].preco,False, servicos[18].id, ordens[1].id), # OS 2: Troca buchas
-            (1, servicos[8].preco,True, servicos[8].id, ordens[2].id),   # OS 3: Limpeza bicos
-            (1, servicos[9].preco,True, servicos[9].id, ordens[2].id),   # OS 3: Scanner
-            (1, servicos[5].preco,True, servicos[5].id, ordens[3].id),   # OS 4: Pastilhas + discos
-            (1, servicos[6].preco,True, servicos[6].id, ordens[3].id),   # OS 4: Sangria fluido
-            (1, servicos[13].preco,False, servicos[13].id, ordens[4].id), # OS 5: Troca bateria
-            (1, servicos[16].preco,False, servicos[16].id, ordens[5].id), # OS 5: Bomba d'água
-            (1, servicos[17].preco,True, servicos[17].id, ordens[5].id), # OS 6: Arrefecimento
-            (1, servicos[3].preco,True, servicos[3].id, ordens[6].id),   # OS 7: Alinhamento
-            (1, servicos[10].preco,True, servicos[10].id, ordens[7].id), # OS 8: Correia dentada
-            (1, servicos[27].preco,False, servicos[27].id, ordens[8].id), # OS 9: Revisão 50k
-            (1, servicos[11].preco,True, servicos[11].id, ordens[9].id), # OS 10: Amortecedores
-            (1, servicos[28].preco,True, servicos[28].id, ordens[10].id),# OS 11: Troca radiador
-            (1, servicos[7].preco,False, servicos[7].id, ordens[11].id), # OS 12: Velas e cabos
-            (1, servicos[2].preco,True, servicos[2].id, ordens[12].id), # OS 13: Ar-condicionado
-            (1, servicos[4].preco,True, servicos[4].id, ordens[13].id), # OS 14: Pastilhas
-            (1, servicos[1].preco,True, servicos[1].id, ordens[0].id),   # OS 1: Filtro ar/combustivel
-            (1, servicos[21].preco,True, servicos[21].id, ordens[2].id), # OS 3: Ignição
+            (1, servicos[0].preco, False, servicos[0].id, ordens[0].id),   
+            (1, servicos[11].preco,False, servicos[11].id, ordens[1].id), 
+            (1, servicos[18].preco,False, servicos[18].id, ordens[1].id), 
+            (1, servicos[8].preco,True, servicos[8].id, ordens[2].id),   
+            (1, servicos[9].preco,True, servicos[9].id, ordens[2].id),   
+            (1, servicos[5].preco,True, servicos[5].id, ordens[3].id),   
+            (1, servicos[6].preco,True, servicos[6].id, ordens[3].id),   
+            (1, servicos[13].preco,False, servicos[13].id, ordens[4].id), 
+            (1, servicos[16].preco,False, servicos[16].id, ordens[5].id), 
+            (1, servicos[17].preco,True, servicos[17].id, ordens[5].id), 
+            (1, servicos[3].preco,True, servicos[3].id, ordens[6].id),   
+            (1, servicos[10].preco,True, servicos[10].id, ordens[7].id), 
+            (1, servicos[27].preco,False, servicos[27].id, ordens[8].id), 
+            (1, servicos[11].preco,True, servicos[11].id, ordens[9].id), 
+            (1, servicos[28].preco,True, servicos[28].id, ordens[10].id),
+            (1, servicos[7].preco,False, servicos[7].id, ordens[11].id), 
+            (1, servicos[2].preco,True, servicos[2].id, ordens[12].id), 
+            (1, servicos[4].preco,True, servicos[4].id, ordens[13].id), 
+            (1, servicos[1].preco,True, servicos[1].id, ordens[0].id),   
+            (1, servicos[21].preco,True, servicos[21].id, ordens[2].id), 
         ]
 
         itens_servico = [
@@ -283,26 +285,26 @@ def seed_database() -> None:
         # 8. ITENS DE PEÇA (20 itens vinculados às OS)
         # ----------------------------------------------------------------------
         itens_peca_data = [
-            (4, pecas[0].preco, True, pecas[0].id, ordens[0].id),   # OS 1: 4L Óleo
-            (1, pecas[1].preco,True, pecas[1].id, ordens[0].id),   # OS 1: Filtro Óleo
-            (2, pecas[12].preco,True, pecas[12].id, ordens[1].id), # OS 2: 2x Amortecedores
-            (2, pecas[15].preco,True, pecas[15].id, ordens[1].id), # OS 2: 2x Buchas
-            (1, pecas[28].preco,True, pecas[28].id, ordens[2].id), # OS 3: Sonda Lambda
-            (1, pecas[7].preco,True, pecas[7].id, ordens[3].id),   # OS 4: Pastilha dianteira
-            (1, pecas[9].preco,False, pecas[9].id, ordens[3].id),   # OS 4: Discos
-            (1, pecas[18].preco,False, pecas[18].id, ordens[4].id), # OS 5: Bateria
-            (1, pecas[22].preco,False, pecas[22].id, ordens[5].id), # OS 6: Bomba d'água
-            (2, pecas[23].preco,False, pecas[23].id, ordens[5].id), # OS 6: 2x Aditivo
-            (1, pecas[21].preco,False, pecas[21].id, ordens[7].id), # OS 8: Kit Correia
-            (1, pecas[27].preco,True, pecas[27].id, ordens[8].id), # OS 9: Sensor MAP
-            (2, pecas[12].preco,True, pecas[12].id, ordens[9].id), # OS 10: Amortecedores
-            (1, pecas[29].preco,True, pecas[29].id, ordens[10].id),# OS 11: Radiador
-            (1, pecas[5].preco,True, pecas[5].id, ordens[11].id),  # OS 12: Velas
-            (1, pecas[6].preco,False, pecas[6].id, ordens[11].id),  # OS 12: Cabos
-            (1, pecas[4].preco,False, pecas[4].id, ordens[12].id),  # OS 13: Filtro AC
-            (1, pecas[7].preco,False, pecas[7].id, ordens[13].id),  # OS 14: Pastilhas
-            (1, pecas[2].preco,True, pecas[2].id, ordens[0].id),   # OS 1: Filtro Ar
-            (1, pecas[11].preco,False, pecas[11].id, ordens[3].id),  # OS 4: Fluido Freio
+            (4, pecas[0].preco, True, pecas[0].id, ordens[0].id),   
+            (1, pecas[1].preco,True, pecas[1].id, ordens[0].id),   
+            (2, pecas[12].preco,True, pecas[12].id, ordens[1].id), 
+            (2, pecas[15].preco,True, pecas[15].id, ordens[1].id), 
+            (1, pecas[28].preco,True, pecas[28].id, ordens[2].id), 
+            (1, pecas[7].preco,True, pecas[7].id, ordens[3].id),   
+            (1, pecas[9].preco,False, pecas[9].id, ordens[3].id),   
+            (1, pecas[18].preco,False, pecas[18].id, ordens[4].id), 
+            (1, pecas[22].preco,False, pecas[22].id, ordens[5].id), 
+            (2, pecas[23].preco,False, pecas[23].id, ordens[5].id), 
+            (1, pecas[21].preco,False, pecas[21].id, ordens[7].id), 
+            (1, pecas[27].preco,True, pecas[27].id, ordens[8].id), 
+            (2, pecas[12].preco,True, pecas[12].id, ordens[9].id), 
+            (1, pecas[29].preco,True, pecas[29].id, ordens[10].id),
+            (1, pecas[5].preco,True, pecas[5].id, ordens[11].id),  
+            (1, pecas[6].preco,False, pecas[6].id, ordens[11].id),  
+            (1, pecas[4].preco,False, pecas[4].id, ordens[12].id),  
+            (1, pecas[7].preco,False, pecas[7].id, ordens[13].id),  
+            (1, pecas[2].preco,True, pecas[2].id, ordens[0].id),   
+            (1, pecas[11].preco,False, pecas[11].id, ordens[3].id),  
         ]
 
         itens_peca = [
@@ -352,8 +354,8 @@ def seed_database() -> None:
             (752.00, FormaPagamento.CREDITO, ordens[5].data_fim or now, ordens[5].id),
             (140.00, FormaPagamento.PIX, ordens[6].data_fim or now, ordens[6].id),
             (820.00, FormaPagamento.CREDITO, ordens[7].data_fim or now, ordens[7].id),
-            (500.00, FormaPagamento.PIX, now - timedelta(days=1), ordens[8].id), # Sinal/Adiantamento OS 9
-            (600.00, FormaPagamento.CREDITO, now, ordens[9].id),           # Sinal/Adiantamento OS 10
+            (500.00, FormaPagamento.PIX, now - timedelta(days=1), ordens[8].id), 
+            (600.00, FormaPagamento.CREDITO, now, ordens[9].id),           
         ]
 
         pagamentos = [

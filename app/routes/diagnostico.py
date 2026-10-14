@@ -7,6 +7,7 @@ from app.core.database import get_session
 from app.models.diagnostico import DiagnosticoCreate, DiagnosticoPublic, DiagnosticoUpdate
 from app.repository.diagnostico_repository import DiagnosticoRepository
 from app.repository.ordem_servico_repository import OrdemServicoRepository
+from app.repository.veiculo_repository import VeiculoRepository
 from app.services.diagnostico_service import DiagnosticoService
 
 
@@ -15,7 +16,8 @@ router = APIRouter(tags=["Diagnósticos"])
 def get_diagnostico_service(session: Session = Depends(get_session)) -> DiagnosticoService:
     repository = DiagnosticoRepository(session)
     ordem_servico_repository = OrdemServicoRepository(session)
-    return DiagnosticoService(repository, ordem_servico_repository)
+    veiculo_repository = VeiculoRepository(session)
+    return DiagnosticoService(repository, ordem_servico_repository, veiculo_repository)
 
 # Chamada de dependencias de sessão
 DiagnosticoServiceDepends = Annotated[DiagnosticoService, Depends(get_diagnostico_service)]
