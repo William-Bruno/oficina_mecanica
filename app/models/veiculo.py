@@ -17,6 +17,7 @@ class VeiculoBase(SQLModel):
     modelo: str = Field(min_length=3, max_length=120, nullable=False)
     ano: int = Field(gt=0)
     combustivel: CombustivelVeiculo = Field(default=CombustivelVeiculo.FLEX, nullable=False)
+    quilometragem: int = Field(default=0, ge=0)
     cliente_id: int = Field(foreign_key="cliente.id", nullable=False)
 
 class Veiculo(VeiculoBase, table=True):

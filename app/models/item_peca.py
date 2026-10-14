@@ -34,7 +34,7 @@ class ItemPecaCreate(SQLModel):
 
 class ItemPecaUpdate(SQLModel):
     quantidade: int | None = None
-    preco_unitario: float | None = None
+    preco_unitario: Decimal | None = None
     aprovado: bool | None = None
     peca_id: int | None = None
 

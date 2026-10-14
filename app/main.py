@@ -11,7 +11,8 @@ from app.routes import (
     veiculos, 
     ordem_servico,
     item_servico,
-    item_peca
+    item_peca,
+    diagnostico
 )
 
 app = FastAPI(
@@ -34,3 +35,4 @@ app.include_router(veiculos.router)
 app.include_router(ordem_servico.router)
 app.include_router(item_servico.router)
 app.include_router(item_peca.router)
+app.include_router(diagnostico.router)
