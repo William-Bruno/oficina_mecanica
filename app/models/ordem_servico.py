@@ -3,6 +3,15 @@ from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.models.enums import StatusOrdemServico
+
+from app.models.diagnostico import DiagnosticoPublic
+from app.models.item_servico import ItemServicoPublic
+from app.models.item_peca import ItemPecaPublic
+from app.models.mecanico import MecanicoPublic
+from app.models.pagamento import PagamentoPublic
+from app.models.veiculo import VeiculoClientePublic
+from app.models.paginacao import Paginacao
+
 if TYPE_CHECKING:
     from app.models.veiculo import Veiculo
     from app.models.mecanico import Mecanico
@@ -31,7 +40,6 @@ class OrdemServico(OrdemServicoBase, table=True):
     pagamentos: list["Pagamento"] = Relationship(back_populates="ordem_servico")
     diagnostico: Optional["Diagnostico"] = Relationship(back_populates="ordem_servico")
 
-
 class OrdemServicoCreate(OrdemServicoBase):
     pass
 
@@ -49,4 +57,14 @@ class OrdemServicoPublic(OrdemServicoBase):
     created_at: datetime 
     updated_at: datetime
 
+class OrdemServicoPublicDetalhada(OrdemServicoPublic):
+    veiculo: Optional[VeiculoClientePublic] = None
+    mecanico: Optional[MecanicoPublic] = None
+    diagnostico: Optional[DiagnosticoPublic] = None
+    itens_servicos: list[ItemServicoPublic] = []
+    itens_pecas: list[ItemPecaPublic] = []
+    pagamentos: list[PagamentoPublic] = []
 
+class OrdemServicoPage(SQLModel):
+    dados:list[OrdemServicoPublic]
+    paginacao: Paginacao

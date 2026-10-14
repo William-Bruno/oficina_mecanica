@@ -1,7 +1,11 @@
 from typing import TYPE_CHECKING
+from decimal import Decimal
 from datetime import datetime, timezone
+from pydantic import field_serializer
 
 from sqlmodel import SQLModel, Field, Relationship
+
+from app.models.paginacao import Paginacao
 
 if TYPE_CHECKING:
     from app.models.servico import Servico
@@ -9,7 +13,7 @@ if TYPE_CHECKING:
 
 class ItemServicoBase(SQLModel):
     tempo_hora: int = Field(default=1, gt=0)
-    valor_hora: float = Field(default=0.0, ge=0)
+    valor_hora: Decimal = Field(default=Decimal("0.00"), ge=0)
     aprovado: bool = Field(default=True, nullable=False)
     servico_id: int = Field(foreign_key="servico.id", nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", nullable=False)
@@ -22,17 +26,27 @@ class ItemServico(ItemServicoBase, table=True):
     ordem_servico: "OrdemServico" = Relationship(back_populates="itens_servicos")
 
 
-class ItemServicoCreate(ItemServicoBase):
-    pass
+class ItemServicoCreate(SQLModel):
+    servico_id: int
+    tempo_hora: int = Field(default=1, gt=0)
+    valor_hora: Decimal = Field(default=Decimal("0.00"), ge=0)
+    aprovado: bool = Field(default=True)
 
 class ItemServicoUpdate(SQLModel):
     tempo_hora: int | None = None
-    valor_hora: float | None = None
+    valor_hora: Decimal | None = None
     aprovado: bool | None = None
     servico_id: int | None = None
-    ordem_servico_id: int | None = None
 
 class ItemServicoPublic(ItemServicoBase):
     id: int
     created_at: datetime 
     updated_at: datetime
+
+    @field_serializer("valor_hora")
+    def formatar_valor_hora(self, valor:Decimal)->Decimal:
+        return valor.quantize(Decimal("0.01"))
+
+class ItemServicoPage(SQLModel):
+    dados:list[ItemServicoPublic]
+    paginacao: Paginacao
