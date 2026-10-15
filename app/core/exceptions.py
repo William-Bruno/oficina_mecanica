@@ -25,6 +25,11 @@ class CampoDuplicadoException(AppError):
     status_code = 409
     msg = "Dado já existe no sistema"
 
+class RequisicaoInvalidaException(AppError):
+    """Valores inválidos"""
+    status_code = 400
+    msg = "Requisição por valores inválidos"
+
 
 class ViolacaoChaveEstrangeiraException(AppError):
     """Violação de FK"""
