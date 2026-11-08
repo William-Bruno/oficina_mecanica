@@ -26,11 +26,13 @@ def listar_servicos(
     pagina: int = Query(1, ge=1, description="Número da página"),
     tamanho_pagina: int = Query(10,g1=1, len=100, description="Quantidade de registros por página"),
     descricao:str = Query(default=None, description="Filtrar pela descricao"),
+    ativo:bool |None = Query(default=True, description="Filtrar por ativo/inativo")
 ):
     return service.listar_paginado(
         pagina=pagina,
         tamanho_pagina=tamanho_pagina,
-        descricao=descricao
+        descricao=descricao,
+        ativo=ativo
     )
 
 
@@ -44,7 +46,11 @@ def atualizar_servico(servico_id:int, dados:ServicoUpdate, service:ServiceDepend
     return service.atualizar(servico_id,dados)
 
 
-@router.delete("/{servico_id}", status_code=status.HTTP_200_OK, summary="Remover um serviço")
-def remover_servico(servico_id:int, service:ServiceDepends):
-    return service.remover(servico_id)
+@router.patch("/{servico_id}/ativar", status_code=status.HTTP_200_OK, summary="Ativar serviço")
+def ativar_servico(servico_id:int, service:ServiceDepends):
+    return service.ativar(servico_id)
+
+@router.patch("/{servico_id}/desativar", status_code=status.HTTP_200_OK, summary="Desativar serviço")
+def desativar_servico(servico_id:int, service:ServiceDepends):
+    return service.desativar(servico_id)
     

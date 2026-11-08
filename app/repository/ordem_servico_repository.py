@@ -26,7 +26,6 @@ class OrdemServicoRepository:
             tp:int=10,
             status:StatusOrdemServico|None=None,
             veiculo_id:int | None = None,
-            mecanico_id:int | None = None,
             data_inicio:datetime | None = None,
             data_fim:datetime|None = None,
     ) -> tuple[list[OrdemServico], int]:
@@ -36,8 +35,6 @@ class OrdemServicoRepository:
             statement = statement.where(OrdemServico.status == status)
         if veiculo_id:
             statement = statement.where(OrdemServico.veiculo_id == veiculo_id)
-        if mecanico_id:
-            statement = statement.where(OrdemServico.mecanico_id == mecanico_id)
         if data_inicio:
             statement = statement.where(OrdemServico.created_at >= data_inicio)
         if data_fim:

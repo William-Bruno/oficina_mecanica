@@ -30,13 +30,13 @@ def get_item_servico_service(session: Annotated[Session, Depends(get_session)]) 
     ordem_servico = OrdemServicoService(
         repository=repo_ordem_servico,
         veiculo_repository=repo_veiculo,
-        mecanico_repository=repo_mecanico
     )
 
     return ItemServicoService(
         repository=repo_item_servico,
         ordem_servico_repository=repo_ordem_servico,
         servico_repository=repo_servico,
+        mecanico_repository=repo_mecanico,
         ordem_servico_service=ordem_servico
     )
 
@@ -61,3 +61,19 @@ def atualizar_item_servico(item_servico_id: int,dados: ItemServicoUpdate,service
 @router.delete("/itens-servico/{item_servico_id}", status_code=status.HTTP_200_OK)
 def remover_item_servico(item_servico_id:int, service:ServiceDepends):
     return service.remover(item_servico_id)
+
+@router.patch("/{item_servico_id}/concluir", response_model=ItemServicoPublic, status_code=status.HTTP_200_OK)
+def concluir_item_servico(item_servico_id: int, service: ServiceDepends):
+    return service.concluir_execucao(item_servico_id)
+
+@router.patch("/{item_servico_id}/reabrir", response_model=ItemServicoPublic, status_code=status.HTTP_200_OK)
+def reabrir_item_servico(item_servico_id: int, service: ServiceDepends):
+    return service.reabrir_execucao(item_servico_id)
+
+@router.patch("/{item_servico_id}/aprovar", response_model=ItemServicoPublic)
+def aprovar_item_servico(item_servico_id:int, service: ServiceDepends):
+    return service.aprovar(item_servico_id)
+
+@router.patch("/{item_servico_id}/recusar", response_model=ItemServicoPublic)
+def recusar_item_servico(item_servico_id:int, service: ServiceDepends):
+    return service.recusar(item_servico_id)

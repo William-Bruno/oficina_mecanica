@@ -8,7 +8,7 @@ from app.core.exceptions import (
     RegraDeNegocioException,
     ViolacaoChaveEstrangeiraException,
 )
-from app.models.enums import StatusOrdemServico
+from app.models.enums import StatusExecucaoItem, StatusOrdemServico
 from app.models.ordem_servico import (
     OrdemServico,
     OrdemServicoCreate,
@@ -16,7 +16,6 @@ from app.models.ordem_servico import (
     OrdemServicoUpdate,
 )
 from app.models.paginacao import Paginacao
-from app.repository.mecanico_repository import MecanicoRepository
 from app.repository.ordem_servico_repository import OrdemServicoRepository
 from app.repository.veiculo_repository import VeiculoRepository
 
@@ -25,12 +24,10 @@ class OrdemServicoService:
     def __init__(
         self,
         repository: OrdemServicoRepository,
-        veiculo_repository: VeiculoRepository,
-        mecanico_repository: MecanicoRepository,
+        veiculo_repository: VeiculoRepository
     ):
         self.repository = repository
         self.veiculo_repository = veiculo_repository
-        self.mecanico_repository = mecanico_repository
 
     def _validar_veiculo_e_cliente(self, veiculo_id: int) -> None:
         """Garante que o veículo informado existe no banco de dados."""
@@ -40,14 +37,6 @@ class OrdemServicoService:
                 f"Veículo com ID {veiculo_id} não encontrado."
             )
 
-    def _validar_mecanico(self, mecanico_id: int) -> None:
-        """Garante que o mecânico informado existe no banco de dados."""
-        mecanico = self.mecanico_repository.get_by_id(mecanico_id)
-        if not mecanico:
-            raise RecursoNaoEncontradoException(
-                f"Mecânico com ID {mecanico_id} não encontrado."
-            )
-
     def _validar_ordem_servico_concluida_cancelada(self, ordem_db: OrdemServico) -> None:
         """Impede alterações em Ordens de Serviço já finalizadas ou canceladas."""
         if ordem_db.status in (StatusOrdemServico.CONCLUIDA, StatusOrdemServico.CANCELADA,):
@@ -55,40 +44,40 @@ class OrdemServicoService:
                 f"A Ordem de Serviço com status {ordem_db.status.value} não pode mais ser alterada."
             )
 
-    def _validar_ordem_servico_status(self, ordem_db: OrdemServico, novo_status: StatusOrdemServico) -> None:
-        if ordem_db.status == novo_status:
+    def _validar_ordem_servico_status(self, ordem_servico_db: OrdemServico, novo_status: StatusOrdemServico) -> None:
+        if ordem_servico_db.status == novo_status:
             return
 
         # 1. Bloqueia se a OS já estiver em estado terminal (CONCLUIDA / CANCELADA)
-        self._validar_ordem_servico_concluida_cancelada(ordem_db)
+        self._validar_ordem_servico_concluida_cancelada(ordem_servico_db)
 
         # 2. Validação para CONCLUIDA: exige ao menos 1 item (serviço ou peça)
         if novo_status == StatusOrdemServico.CONCLUIDA:
-            if not ordem_db.itens_servicos and not ordem_db.itens_pecas:
+            if not ordem_servico_db.itens_servicos and not ordem_servico_db.itens_pecas:
                 raise RegraDeNegocioException(
                     "Não é possível concluir uma Ordem de Serviço sem nenhum serviço ou peça cadastrada."
                 )
 
         # 3. Regra para CANCELAMENTO: só cancela se estiver AGENDADA ou EM_ORCAMENTO
         if novo_status == StatusOrdemServico.CANCELADA:
-            if ordem_db.status not in (
+            if ordem_servico_db.status not in (
                 StatusOrdemServico.AGENDADA,
                 StatusOrdemServico.EM_ORCAMENTO,
             ):
                 raise RegraDeNegocioException(
-                    f"Não é possível cancelar uma Ordem de Serviço com status '{ordem_db.status.value}'."
+                    f"Não é possível cancelar uma Ordem de Serviço com status '{ordem_servico_db.status.value}'."
                 )
             return
 
         # 4. Transições a partir de AGENDADA (só pode avançar para EM_ANDAMENTO)
-        if ordem_db.status == StatusOrdemServico.AGENDADA:
+        if ordem_servico_db.status == StatusOrdemServico.AGENDADA:
             if novo_status != StatusOrdemServico.EM_ANDAMENTO:
                 raise RegraDeNegocioException(
                     "Uma Ordem de Serviço 'AGENDADA' só pode ser alterada para 'EM_ANDAMENTO' ou 'CANCELADA'."
                 )
 
         # 5. Transições a partir de EM_ANDAMENTO (pode ir para EM_ORCAMENTO ou CONCLUIDA)
-        elif ordem_db.status == StatusOrdemServico.EM_ANDAMENTO:
+        elif ordem_servico_db.status == StatusOrdemServico.EM_ANDAMENTO:
             if novo_status not in (
                 StatusOrdemServico.EM_ORCAMENTO,
                 StatusOrdemServico.CONCLUIDA,
@@ -98,7 +87,7 @@ class OrdemServicoService:
                 )
 
         # 6. Transições a partir de EM_ORCAMENTO (retorna para EM_ANDAMENTO ao aprovar)
-        elif ordem_db.status == StatusOrdemServico.EM_ORCAMENTO:
+        elif ordem_servico_db.status == StatusOrdemServico.EM_ORCAMENTO:
             if novo_status != StatusOrdemServico.EM_ANDAMENTO:
                 raise RegraDeNegocioException(
                     "Uma Ordem de Serviço 'EM_ORCAMENTO' precisa retornar para 'EM_ANDAMENTO' ao ser aprovada."
@@ -141,7 +130,6 @@ class OrdemServicoService:
         tp: int = 10,
         status: StatusOrdemServico | None = None,
         veiculo_id: int | None = None,
-        mecanico_id: int | None = None,
         data_inicio: datetime | None = None,
         data_fim: datetime | None = None,
     ) -> OrdemServicoPage:
@@ -151,7 +139,6 @@ class OrdemServicoService:
             tp=tp,
             status=status,
             veiculo_id=veiculo_id,
-            mecanico_id=mecanico_id,
             data_inicio=data_inicio,
             data_fim=data_fim,
         )
@@ -172,7 +159,6 @@ class OrdemServicoService:
     def criar(self, dados: OrdemServicoCreate) -> OrdemServico:
         """Cria uma nova Ordem de Serviço validando todas as chaves estrangeiras."""
         self._validar_veiculo_e_cliente(dados.veiculo_id)
-        self._validar_mecanico(dados.mecanico_id)
 
         try:
             return self.repository.create(dados)
@@ -197,10 +183,16 @@ class OrdemServicoService:
         if dados.veiculo_id and dados.veiculo_id != ordem_db.veiculo_id:
             self._validar_veiculo_e_cliente(dados.veiculo_id)
 
-        # Validação de troca de mecânico
-        if dados.mecanico_id and dados.mecanico_id != ordem_db.mecanico_id:
-            self._validar_mecanico(dados.mecanico_id)
-
+        # Bloquear conslusão de item servico estiver pendente
+        if dados.status == StatusOrdemServico.CONCLUIDA:
+            itens_pendentes = [
+                item for item in ordem_db.itens_servicos
+                if item.status_execucao == StatusExecucaoItem.PENDENTE and item.aprovado == True
+            ]
+            if itens_pendentes:
+                raise RegraDeNegocioException(
+                    "Nao é possível concluir a Ordem de Serviço. Existem serviços pendentes de execução"
+                )
         try:
             return self.repository.update(ordem_db, dados)
         except IntegrityError:
@@ -228,3 +220,25 @@ class OrdemServicoService:
             raise ViolacaoChaveEstrangeiraException(
                 "A Ordem de Serviço possui registros associados (itens ou pagamentos) e não pode ser removida."
             )
+
+    def alterar_status(self, ordem_servico_id:int, novo_status:StatusOrdemServico) -> OrdemServico:
+        ordem_servico_db = self.buscar_por_id(ordem_servico_id)
+
+        #validar ordem de servico
+        self._validar_ordem_servico_status(ordem_servico_db=ordem_servico_db, novo_status=novo_status)
+
+        #checagem pra conclusão da ordem de serviço
+        if novo_status == StatusOrdemServico.CONCLUIDA:
+            items_pendentes = [
+                item for item in ordem_servico_db.itens_servicos
+                if item.status_execucao == StatusExecucaoItem.PENDENTE and item.aprovado == True
+            ]
+            if items_pendentes:
+                raise RegraDeNegocioException(
+                    "Não é possivel concluir a Ordem de Serviço. Existem erviços aprovados pendentes de execução"
+                )
+            ordem_servico_db.data_fim = datetime.now(timezone.utc)
+        ordem_servico_db.status = novo_status
+        return self.repository._salvar(ordem_servico_db)
+
+        

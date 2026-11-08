@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 
-from app.core.exceptions import ViolacaoChaveEstrangeiraException, RecursoNaoEncontradoException
+from app.core.exceptions import ConflitoEstadoException, ViolacaoChaveEstrangeiraException, RecursoNaoEncontradoException
 
 from app.models.servico import Servico, ServicoCreate, ServicoUpdate, ServicoPage
 from app.models.paginacao import Paginacao
@@ -17,11 +17,12 @@ class ServicoService:
             raise RecursoNaoEncontradoException(f"Servico com ID {servico_id} não encontrado")
         return servico
 
-    def listar_paginado(self, pagina:int=1,tamanho_pagina:int=10,descricao:str|None=None,) -> ServicoPage:
+    def listar_paginado(self, pagina:int=1,tamanho_pagina:int=10,descricao:str|None=None,ativo:bool|None=None) -> ServicoPage:
         servicos, total_registros = self.repository.get_paginado(
             pagina=pagina,
             tamanho_pagina=tamanho_pagina,
             descricao=descricao,
+            ativo=ativo
         )
 
         if total_registros > 0:
@@ -43,7 +44,7 @@ class ServicoService:
         try:
             return self.repository.create(dados)
         except IntegrityError:
-            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao cadastrar o mecanico")
+            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao cadastrar o serviço")
 
     def atualizar(self, servico_id:int, dados:ServicoUpdate) -> Servico:
         dados_id = self.buscar_por_id(servico_id)
@@ -53,10 +54,20 @@ class ServicoService:
             self.repository.rollback()
             raise ViolacaoChaveEstrangeiraException("Erro de intgridade ao atualizar servico")
 
-    def remover(self, servico_id: int) -> dict[str, str]:
-        dados_id = self.buscar_por_id(servico_id)
-        try:
-            self.repository.delete(dados_id)
-            return{"message":"Servico removido com sucesso"}
-        except IntegrityError:
-            raise ViolacaoChaveEstrangeiraException("Servio possui items de servico e não pode ser removido")
+    def ativar(self, servico_id:int) -> Servico:
+        servico_db = self.buscar_por_id(servico_id)
+
+        if servico_db.ativo:
+            raise ConflitoEstadoException(
+                f"O servico {servico_db.descricao} já está ativo"
+            )
+        return self.repository.active(servico_db)
+
+    def desativar(self, servico_id:int) -> Servico:
+        servico_db = self.buscar_por_id(servico_id)
+
+        if not servico_db.ativo:
+            raise ConflitoEstadoException(
+                f"O servico {servico_db.descricao} já está desativado"
+            )
+        return self.repository.deactive(servico_db)

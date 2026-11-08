@@ -14,7 +14,6 @@ def get_pagamento_service(session: Session = Depends(get_session)) -> PagamentoS
     ordem_servico_repository = OrdemServicoRepository(session)
     return PagamentoService(repository, ordem_servico_repository)
 
-
 router = APIRouter(prefix="/pagamentos", tags=["Pagamentos"])
 
 PagamentoServiceDepends = Annotated[PagamentoService, Depends(get_pagamento_service)]
@@ -22,3 +21,7 @@ PagamentoServiceDepends = Annotated[PagamentoService, Depends(get_pagamento_serv
 @router.post("/{ordem_servico_id}", response_model=PagamentoPublic, status_code=status.HTTP_201_CREATED)
 def registrar_pagamento(ordem_servico_id:int, dados: PagamentoCreate, service: PagamentoServiceDepends):
     return service.registrar_pagamento(ordem_servico_id, dados)
+
+@router.get("/ordem-servico/{ordem_servico_id}/saldo")
+def consultar_saldo(ordem_servico_id: int, service: PagamentoServiceDepends):
+    return service.consultar_saldo(ordem_servico_id)

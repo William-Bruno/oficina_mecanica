@@ -61,3 +61,23 @@ class PagamentoService:
             self.ordem_servico_repository.update(ordem_servico_db)
 
         return self.repository.create(novo_pagamento)
+
+    def consultar_saldo(self, ordem_servico_id:int) -> dict:
+        ordem_servico_db = self.ordem_servico_repository.get_by_id(ordem_servico_id)
+        if not ordem_servico_db:
+            raise RecursoNaoEncontradoException(
+                "Ordem de serviço não enontrada"
+            )
+
+        total_pecas = sum((item.quantidade * item.preco_unitario) for item in ordem_servico_db.itens_pecas if item.aprovado)
+        total_servicos = sum((item.tempo_hora * item.valor_hora) for item in ordem_servico_db.itens_servicos if item.aprovado)
+        total_geral = total_pecas + total_servicos
+
+        pagamentos_realizados = self.repository.get_by_ordem_servico_id(ordem_servico_id)
+        total_pago = sum(p.valor for p in pagamentos_realizados)
+
+        return{
+            "valor_total_aprovado": total_geral,
+            "total_pago": total_pago,
+            "saldo_devedor": total_geral - total_pago
+        }

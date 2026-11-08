@@ -27,11 +27,13 @@ def listar_pecas(
     pagina: int = Query(1, ge=1, description="Número da página"),
     tamanho_pagina: int = Query(10,g1=1, len=100, description="Quantidade de registros por página"),
     nome:str = Query(default=None, description="Filtrar pelo nome"),
+    ativo:bool | None = Query(default=True, description="Filtrar ativas/inativas"),
 ):
     return service.listar_paginado(
         pagina=pagina,
         tamanho_pagina=tamanho_pagina,
-        nome=nome
+        nome=nome,
+        ativo=ativo
     )
 
 
@@ -44,8 +46,11 @@ def buscar_peca(peca_id:int, service:ServiceDepends):
 def atualizar_peca(peca_id:int, dados:PecaUpdate, service:ServiceDepends):
     return service.atualizar(peca_id,dados)
 
+@router.patch("/{peca_id}/ativar", status_code=status.HTTP_200_OK, summary="Ativar peça")
+def ativar_peca(peca_id:int, service:ServiceDepends):
+    return service.ativar(peca_id)
 
-@router.delete("/{peca_id}", status_code=status.HTTP_200_OK, summary="Remover uma peça")
-def remover_peca(peca_id:int, service:ServiceDepends):
-    return service.remover(peca_id)
+@router.patch("/{peca_id}/desativar", status_code=status.HTTP_200_OK, summary="Desativar peça")
+def desativar_peca(peca_id:int, service:ServiceDepends):
+    return service.desativar(peca_id)
     

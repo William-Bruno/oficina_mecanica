@@ -1,11 +1,13 @@
+from pytest import Item
 from sqlalchemy.exc import IntegrityError
 
 from app.core.exceptions import (
     RecursoNaoEncontradoException,
     RegraDeNegocioException,
-    ViolacaoChaveEstrangeiraException
+    ViolacaoChaveEstrangeiraException,
+    ConflitoEstadoException
 )
-from app.models.enums import StatusOrdemServico
+from app.models.enums import StatusExecucaoItem, StatusOrdemServico
 from app.models.item_servico import (
     ItemServico,
     ItemServicoCreate,
@@ -17,6 +19,7 @@ from app.models.ordem_servico import OrdemServico
 from app.repository.item_servico_repository import ItemServicoRepository
 from app.repository.ordem_servico_repository import OrdemServicoRepository
 from app.repository.servico_repository import ServicoRepository
+from app.repository.mecanico_repository import MecanicoRepository
 
 from app.services.ordem_servico_service import OrdemServicoService
 
@@ -26,11 +29,13 @@ class ItemServicoService:
             repository: ItemServicoRepository,
             ordem_servico_repository: OrdemServicoRepository,
             servico_repository: ServicoRepository,
+            mecanico_repository: MecanicoRepository,
             ordem_servico_service: OrdemServicoService
     ):
         self.repository = repository
         self.ordem_servico_repository = ordem_servico_repository
         self.servico_repository = servico_repository
+        self.mecanico_repository = mecanico_repository
         self.ordem_servico_service = ordem_servico_service
 
     def _validar_ordem_servico(self, ordem_servico_id:int) -> OrdemServico:
@@ -44,13 +49,55 @@ class ItemServicoService:
     def _validar_servico(self, servico_id:int) -> None:
         servico_db = self.servico_repository.get_by_id(servico_id)
         if not servico_db:
-            raise RecursoNaoEncontradoException(f"Serviço com ID {servico_id} nao encontrado")
+            raise RecursoNaoEncontradoException(
+                f"Serviço com ID {servico_id} nao encontrado"
+            )
+        if not servico_db.ativo:
+            raise RegraDeNegocioException(
+                f"O serviço {servico_db.descricao} está inativo e não pode ser utilizado"
+            )
+    
+    def _validar_mecanico(self, mecanico_id: int) -> None:
+        """Garante que o mecânico informado existe no banco de dados."""
+        mecanico = self.mecanico_repository.get_by_id(mecanico_id)
+        if not mecanico:
+            raise RecursoNaoEncontradoException(
+                f"Mecânico com ID {mecanico_id} não encontrado."
+            )
+        if not mecanico.ativo:
+            raise RegraDeNegocioException(
+                f"O mecânico {mecanico.nome} está inativo e não pode ser vinculado"
+            )
 
     def _buscar_item_servico_por_id(self, item_servico_id:int) -> ItemServico:
         item_servico_db = self.repository.get_by_id(item_servico_id)
         if not item_servico_db:
             raise RecursoNaoEncontradoException(f"Item de serviço com ID {item_servico_id} não encontrado.")
         return item_servico_db
+
+    def _alterar_aprovacao(self, item_servico_id:int, aprovado:bool) -> ItemServico:
+        item_servio_db = self._buscar_item_servico_por_id(item_servico_id)
+        self._validar_ordem_servico(item_servio_db.ordem_servico_id)
+
+        if item_servio_db.aprovado:
+            status = "aprovado" if aprovado else "recusado"
+            raise ConflitoEstadoException(
+                f"Este servio já está {status}"
+            )
+        item_servio_db.aprovado = aprovado
+        self.repository.session.commit()
+        self.repository.session.refresh(item_servio_db)
+
+        # Recalcula os valores
+        self.ordem_servico_service.atualizar_valor_total(item_servio_db.ordem_servico_id)
+        return item_servio_db
+
+    def aprovar(self, item_servico_id:int) -> ItemServico:
+        return self._alterar_aprovacao(item_servico_id, True)
+
+    def recusar(self, item_servico_id:int) -> ItemServico:
+        return self._alterar_aprovacao(item_servico_id, False)
+
 
     def listar_por_ordem_servico_id(self, ordem_servico_id:int) -> list[ItemServico]:
         ordem_servico_db = self.ordem_servico_repository.get_by_id(ordem_servico_id)
@@ -64,6 +111,7 @@ class ItemServicoService:
     def criar(self, ordem_servico_id:int, dados:ItemServicoCreate) -> ItemServico:
         self._validar_ordem_servico(ordem_servico_id)
         self._validar_servico(dados.servico_id)
+        self._validar_mecanico(dados.mecanico_id)
 
         #Verifica se já existe
         servico_existente = self.repository.get_by_ordem_servico_e_servico(ordem_servico_id, dados.servico_id)
@@ -88,7 +136,10 @@ class ItemServicoService:
 
         #valida se houver troca de servico
         if dados.servico_id and dados.servico_id != item_servico_db.servico_id:
-            self._validar_ordem_servico(dados.servico_id)
+            self._validar_servico(dados.servico_id)
+
+        if dados.mecanico_id and dados.mecanico_id != item_servico_db.mecanico_id:
+            self._validar_mecanico(dados.mecanico_id)
 
         try:
             item_servico_atualizado = self.repository.update(item_servico_db, dados)
@@ -112,3 +163,47 @@ class ItemServicoService:
             raise ViolacaoChaveEstrangeiraException(
                 "Não foi possível remover o item de serviço devido a restrições"
             )
+
+    def concluir_execucao(self, item_servico_id:int) -> ItemServico:
+        item_servico_db = self._buscar_item_servico_por_id(item_servico_id)
+
+        # Aprovação do cliente
+        if not item_servico_db.aprovado:
+            raise RegraDeNegocioException(
+                "Não é possível executar um serviço não aprovado pelo cliente"
+            )
+
+        self._validar_ordem_servico(item_servico_db.ordem_servico_id)
+        ordem_servico_db = self.ordem_servico_repository.get_by_id(item_servico_db.ordem_servico_id)
+        if ordem_servico_db.status != StatusOrdemServico.EM_ANDAMENTO:
+            raise RegraDeNegocioException(
+                "Só é possível concluir serviços de uma Ordem de Serviço que esteja em andamento"
+            )
+
+        if item_servico_db.status_execucao == StatusExecucaoItem.CONCLUIDA:
+            raise ConflitoEstadoException(
+                "Este serviço já foi concluido"
+            )
+
+        item_servico_db.status_execucao = StatusExecucaoItem.CONCLUIDA
+        self.repository.session.commit()
+        self.repository.session.refresh(item_servico_db)
+        return item_servico_db
+
+    def reabrir_execucao(self, item_servico_id:int) -> ItemServico:
+        item_servico_db = self._buscar_item_servico_por_id(item_servico_id)
+        self._validar_ordem_servico(item_servico_db.ordem_servico_id)
+
+        if item_servico_db.status_execucao == StatusExecucaoItem.PENDENTE:
+            raise ConflitoEstadoException(
+                "Serviço ja está pendente"
+            )
+
+        item_servico_db.status_execucao = StatusExecucaoItem.PENDENTE
+        self.repository.session.commit()
+        self.repository.session.refresh(item_servico_db)
+        return item_servico_db    
+
+
+
+        

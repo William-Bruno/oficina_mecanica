@@ -3,7 +3,8 @@ from sqlalchemy.exc import IntegrityError
 from app.core.exceptions import (
     RecursoNaoEncontradoException,
     RegraDeNegocioException,
-    ViolacaoChaveEstrangeiraException
+    ViolacaoChaveEstrangeiraException,
+    ConflitoEstadoException
 )
 from app.models.enums import StatusOrdemServico
 from app.models.item_peca import (
@@ -44,13 +45,42 @@ class ItemPecaService:
     def _validar_peca(self, peca_id:int) -> None:
         peca_db = self.peca_repository.get_by_id(peca_id)
         if not peca_db:
-            raise RecursoNaoEncontradoException(f"Peça com ID {peca_id} não encontada")
+            raise RecursoNaoEncontradoException(
+                f"Peça com ID {peca_id} não encontada"
+            )
+        if not peca_db.ativo:
+            raise RegraDeNegocioException(
+                f"A peça {peca_db.nome} está inativa e não pode ser adicionada"
+            )
 
     def _buscar_item_peca_por_id(self, item_peca_id:int) -> ItemPeca:
         item_peca_db = self.repository.get_by_id(item_peca_id)
-        if not item_peca_id:
+        if not item_peca_db:
             raise RecursoNaoEncontradoException(f"Item de peça com ID {item_peca_id} não encontrado.")
         return item_peca_db
+
+    def _alterar_aprovacao(self, item_peca_id:int, aprovado:bool) -> ItemPeca:
+            item_peca_db = self._buscar_item_peca_por_id(item_peca_id)
+            self._validar_ordem_servico(item_peca_db.ordem_servico_id)
+    
+            if item_peca_db.aprovado:
+                status = "aprovado" if aprovado else "recusado"
+                raise ConflitoEstadoException(
+                    f"Esta peça já está {status}"
+                )
+            item_peca_db.aprovado = aprovado
+            self.repository.session.commit()
+            self.repository.session.refresh(item_peca_db)
+    
+            # Recalcula os valores
+            self.ordem_servico_service.atualizar_valor_total(item_peca_db.ordem_servico_id)
+            return item_peca_db
+    
+    def aprovar(self, item_peca_id:int) -> ItemPeca:
+        return self._alterar_aprovacao(item_peca_id, True)
+
+    def recusar(self, item_peca_id:int) -> ItemPeca:
+        return self._alterar_aprovacao(item_peca_id, False)
 
     def listar_por_ordem_servico_id(self, ordem_servico_id:int) -> list[ItemPeca]:
         ordem_servico_db = self.ordem_servico_repository.get_by_id(ordem_servico_id)
@@ -86,7 +116,7 @@ class ItemPecaService:
         self._validar_ordem_servico(item_peca_db.ordem_servico_id)
 
         if dados.peca_id and dados.peca_id != item_peca_db.peca_id:
-            self._validar_ordem_servico(dados.peca_id)
+            self._validar_peca(dados.peca_id)
 
         try:
             item_peca_atualizada = self.repository.update(item_peca_db, dados)

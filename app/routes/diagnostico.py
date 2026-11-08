@@ -5,6 +5,7 @@ from sqlmodel import Session
 
 from app.core.database import get_session
 from app.models.diagnostico import DiagnosticoCreate, DiagnosticoPublic, DiagnosticoUpdate
+from app.repository.mecanico_repository import MecanicoRepository
 from app.repository.diagnostico_repository import DiagnosticoRepository
 from app.repository.ordem_servico_repository import OrdemServicoRepository
 from app.repository.veiculo_repository import VeiculoRepository
@@ -17,7 +18,8 @@ def get_diagnostico_service(session: Session = Depends(get_session)) -> Diagnost
     repository = DiagnosticoRepository(session)
     ordem_servico_repository = OrdemServicoRepository(session)
     veiculo_repository = VeiculoRepository(session)
-    return DiagnosticoService(repository, ordem_servico_repository, veiculo_repository)
+    mecanico_repository = MecanicoRepository(session)
+    return DiagnosticoService(repository, ordem_servico_repository, veiculo_repository, mecanico_repository)
 
 # Chamada de dependencias de sessão
 DiagnosticoServiceDepends = Annotated[DiagnosticoService, Depends(get_diagnostico_service)]
@@ -33,10 +35,6 @@ def buscar_diagnostico_ordem_servico(ordem_servico_id:int, service: DiagnosticoS
 @router.patch("/diagnosticos/{diagnostico_id}", response_model=DiagnosticoPublic)
 def atualizar_diagnostico(diagnostico_id: int, dados:DiagnosticoUpdate, service:DiagnosticoServiceDepends):
     return service.atualizar(diagnostico_id, dados)
-
-@router.delete("/diagnosticos/{diagnostico_id}", status_code=status.HTTP_200_OK)
-def remover_diagnostico(diagnostio_id: int, service: DiagnosticoServiceDepends):
-    return service.remover(diagnostio_id)
 
 
 

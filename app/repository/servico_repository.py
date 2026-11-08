@@ -21,7 +21,7 @@ class ServicoRepository:
         statement = select(Servico).where(Servico.descricao == descricao)
         return self.session.exec(statement).first()
 
-    def get_paginado(self, pagina:int=1, tamanho_pagina:int=10,descricao:str | None=None,) -> tuple[list[Servico], int]:
+    def get_paginado(self, pagina:int=1, tamanho_pagina:int=10,descricao:str | None=None, ativo:bool|None=None) -> tuple[list[Servico], int]:
         consulta = select(Servico)
         consulta_total = select(func.count()).select_from(Servico)
 
@@ -30,6 +30,11 @@ class ServicoRepository:
             filtro_descricao = Servico.descricao.ilike(f"%{descricao}%")
             consulta= consulta.where(filtro_descricao)
             consulta_total = consulta_total.where(filtro_descricao)
+
+        #Filtro de Ativa/Inativa
+        if ativo is not None:
+            consulta = consulta.where(Servico.ativo == ativo)
+            consulta_total = consulta_total.where(Servico.ativo == ativo)
 
         total_registros = self.session.exec(consulta_total).one()
 
@@ -48,9 +53,13 @@ class ServicoRepository:
         dados_db.sqlmodel_update(dados_atualizados)
         return self._salvar(dados_db)
 
-    def delete(self, dados_db:Servico) -> None:
-        self.session.delete(dados_db)
-        self.session.commit()
+    def active(self, dados_db:Servico) -> None:
+        dados_db.ativo = True
+        return self._salvar(dados_db)
+
+    def deactive(self, dados_db:Servico) -> None:
+        dados_db.ativo = False
+        return self._salvar(dados_db)   
 
     def rollback(self) -> None:
         self.session.rollback()

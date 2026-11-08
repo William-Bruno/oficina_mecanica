@@ -19,6 +19,10 @@ class RecursoNaoEncontradoException(AppError):
     status_code = 404
     msg = "Recurso não encontrado"
 
+class ConflitoEstadoException(AppError):
+    """Recurso já ativo ou inativo"""
+    status_code = 409
+    mgs = "Recurso ja está no estado solicitado"
 
 class CampoDuplicadoException(AppError):
     """Chave única duplicada"""

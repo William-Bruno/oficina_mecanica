@@ -27,6 +27,7 @@ class MecanicoRepository:
 
     def get_paginado(self, pagina:int=1, tamanho_pagina:int=10,
                      nome:str | None=None, especialidade:str|None=None,
+                     ativo:bool|None=None,
                      ) -> tuple[list[Mecanico], int]:
         consulta = select(Mecanico)
         consulta_total = select(func.count()).select_from(Mecanico)
@@ -37,10 +38,16 @@ class MecanicoRepository:
             consulta= consulta.where(filtro_nome)
             consulta_total = consulta_total.where(filtro_nome)
 
+        # Filtro especialidade
         if especialidade:
             filtro_especialidade = Mecanico.especialidade.ilike(f"%{especialidade}")
             consulta =consulta.where(filtro_especialidade)
             consulta_total = consulta_total.where(filtro_especialidade)
+
+        #Filtro de Ativa/Inativa
+        if ativo is not None:
+            consulta = consulta.where(Mecanico.ativo == ativo)
+            consulta_total = consulta_total.where(Mecanico.ativo == ativo)
 
         total_registros = self.session.exec(consulta_total).one()
 
@@ -59,9 +66,13 @@ class MecanicoRepository:
         dados_db.sqlmodel_update(dados_atualizados)
         return self._salvar(dados_db)
 
-    def delete(self, dados_db:Mecanico) -> None:
-        self.session.delete(dados_db)
-        self.session.commit()
+    def active(self, dados_db:Mecanico) -> None:
+        dados_db.ativo = True
+        return self._salvar(dados_db)
+    
+    def deactive(self, dados_db:Mecanico) -> None:
+        dados_db.ativo = False
+        return self._salvar(dados_db) 
 
     def rollback(self) -> None:
         self.session.rollback()

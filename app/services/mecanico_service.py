@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 
-from app.core.exceptions import ViolacaoChaveEstrangeiraException, RecursoNaoEncontradoException
+from app.core.exceptions import ConflitoEstadoException, ViolacaoChaveEstrangeiraException, RecursoNaoEncontradoException
 
 from app.models.mecanico import Mecanico, MecanicoCreate, MecanicoUpdate, MecanicoPage
 from app.models.paginacao import Paginacao
@@ -18,13 +18,14 @@ class MecanicoService:
         return mecanico
 
     def listar_paginado(self, pagina:int=1,tamanho_pagina:int=10,
-                        nome:str|None=None,especialidade:str|None=None,
+                        nome:str|None=None,especialidade:str|None=None, ativo:bool | None=None
                         ) -> MecanicoPage:
         mecanicos, total_registros = self.repository.get_paginado(
             pagina=pagina,
             tamanho_pagina=tamanho_pagina,
             nome=nome,
-            especialidade=especialidade
+            especialidade=especialidade,
+            ativo=ativo
         )
 
         if total_registros > 0:
@@ -56,10 +57,20 @@ class MecanicoService:
             self.repository.rollback()
             raise ViolacaoChaveEstrangeiraException("Erro de integridade ao atualizar mecanico")
 
-    def remover(self, mecanico_id: int) -> dict[str, str]:
-        dados_id = self.buscar_por_id(mecanico_id)
-        try:
-            self.repository.delete(dados_id)
-            return{"message":"Mecanico removido com sucesso"}
-        except IntegrityError:
-            raise ViolacaoChaveEstrangeiraException(f"Mecanico possui orderns de servico e não pode ser removido")
+    def ativar(self, mecanico_id:int) -> Mecanico:
+        mecanico_db = self.buscar_por_id(mecanico_id)
+
+        if mecanico_db.ativo:
+            raise ConflitoEstadoException(
+                f"O mecanico {mecanico_db.nome} já está ativo"
+            )
+        return self.repository.active(mecanico_db)
+
+    def desativar(self, mecanico_id:int) -> Mecanico:
+        mecanico_db = self.buscar_por_id(mecanico_id)
+
+        if not mecanico_db.ativo:
+            raise ConflitoEstadoException(
+                f"O mecanico {mecanico_db.nome} já está desativado"
+            )
+        return self.repository.deactive(mecanico_db)

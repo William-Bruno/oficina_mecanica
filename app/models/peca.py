@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 class PecaBase(SQLModel):
     nome: str = Field(min_length=3, max_length=120, index=True)
     preco: float = Field(gt=0, nullable=False)
+    ativo: bool = Field(default=True)
 
 class Peca(PecaBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -24,6 +25,7 @@ class PecaCreate(PecaBase):
 class PecaUpdate(SQLModel):
     nome: str | None = None
     preco: float | None = Field(default=None, gt=0)
+    ativo: bool | None = None
 
 class PecaPublic(PecaBase):
     id: int

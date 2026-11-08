@@ -1,6 +1,11 @@
 from sqlalchemy.exc import IntegrityError
 
-from app.core.exceptions import ViolacaoChaveEstrangeiraException, CampoDuplicadoException, RecursoNaoEncontradoException
+from app.core.exceptions import (
+    ViolacaoChaveEstrangeiraException, 
+    CampoDuplicadoException, 
+    RecursoNaoEncontradoException,
+    ConflitoEstadoException,
+    )
 
 from app.models.peca import Peca, PecaCreate, PecaUpdate, PecaPage
 from app.models.paginacao import Paginacao
@@ -22,11 +27,12 @@ class PecaService:
             raise RecursoNaoEncontradoException(f"Peca com ID {peca_id} não encontrado")
         return peca
 
-    def listar_paginado(self, pagina:int=1,tamanho_pagina:int=10,nome:str|None=None,) -> PecaPage:
+    def listar_paginado(self, pagina:int=1,tamanho_pagina:int=10,nome:str|None=None,ativo:bool|None=None) -> PecaPage:
         pecas, total_registros = self.repository.get_paginado(
             pagina=pagina,
             tamanho_pagina=tamanho_pagina,
             nome=nome,
+            ativo=ativo
         )
 
         if total_registros > 0:
@@ -50,7 +56,7 @@ class PecaService:
         try:
             return self.repository.create(dados)
         except IntegrityError:
-            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao cadastrar o mecanico")
+            raise ViolacaoChaveEstrangeiraException("Erro de integridade ao cadastrar a peça")
 
     def atualizar(self, peca_id:int, dados:PecaUpdate) -> Peca:
         dados_id = self.buscar_por_id(peca_id)
@@ -63,10 +69,20 @@ class PecaService:
             self.repository.rollback()
             raise ViolacaoChaveEstrangeiraException("Erro de intgridade ao atualizar peca")
 
-    def remover(self, peca_id: int) -> dict[str, str]:
-        dados_id = self.buscar_por_id(peca_id)
-        try:
-            self.repository.delete(dados_id)
-            return{"message":"Peca removido com sucesso"}
-        except IntegrityError:
-            raise ViolacaoChaveEstrangeiraException(f"Peça possui items de peça e não pode ser removido")
+    def ativar(self, peca_id:int) -> Peca:
+        peca_db = self.buscar_por_id(peca_id)
+
+        if peca_db.ativo:
+            raise ConflitoEstadoException(
+                f"A peça {peca_db.nome} já está ativa"
+            )
+        return self.repository.active(peca_db)
+
+    def desativar(self, peca_id:int) -> Peca:
+        peca_db = self.buscar_por_id(peca_id)
+
+        if not peca_db.ativo:
+            raise ConflitoEstadoException(
+                f"A peça {peca_db.nome} já está desativada"
+            )
+        return self.repository.deactive(peca_db)

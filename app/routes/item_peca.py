@@ -58,6 +58,14 @@ def adicionar_item_peca(ordem_peca_id:int, dados: ItemPecaCreate, service: Servi
 def atualizar_item_peca(item_peca_id: int,dados: ItemPecaUpdate,service: ServiceDepends):
     return service.atualizar(item_peca_id, dados)
 
+@router.patch("/{item_peca_id}/aprovar", response_model=ItemPecaPublic)
+def aprovar_item_peca(item_peca_id:int, service: ServiceDepends):
+    return service.aprovar(item_peca_id)
+
+@router.patch("/{item_peca_id}/recusar", response_model=ItemPecaPublic)
+def recusar_item_peca(item_peca_id:int, service: ServiceDepends):
+    return service.recusar(item_peca_id)
+
 @router.delete("/itens-peca/{item_peca_id}", status_code=status.HTTP_200_OK)
 def remover_item_peca(item_peca_id:int, service:ServiceDepends):
     return service.remover(item_peca_id)

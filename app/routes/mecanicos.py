@@ -28,12 +28,14 @@ def listar_mecanicos(
     tamanho_pagina: int = Query(10,g1=1, len=100, description="Quantidade de registros por página"),
     nome:str = Query(default=None, description="Filtrar por nome"),
     especialidade: str = Query(default=None, description="Filtrar por especialidade"),
+    ativo:bool|None = Query(default=True, description="Filtro por ativo/inativo")
 ):
     return service.listar_paginado(
         pagina=pagina,
         tamanho_pagina=tamanho_pagina,
         nome=nome,
-        especialidade=especialidade
+        especialidade=especialidade,
+        ativo=ativo
     )
 
 
@@ -47,6 +49,10 @@ def atualizar_mecanico(mecanico_id:int, dados:MecanicoUpdate, service:ServiceDep
     return service.atualizar(mecanico_id,dados)
 
 
-@router.delete("/{mecanico_id}", status_code=status.HTTP_200_OK, summary="Remover um Mecanico")
-def remover_mecanico(mecanico_id:int, service:ServiceDepends):
-    return service.remover(mecanico_id)
+@router.patch("/{mecanico_id}/ativar", status_code=status.HTTP_200_OK, summary="Ativar mecanico")
+def ativar_mecanico(mecanico_id:int, service:ServiceDepends):
+    return service.ativar(mecanico_id)
+
+@router.patch("/{mecanico_id}/desativar", status_code=status.HTTP_200_OK, summary="Desativar mecanico")
+def desativar_mecanico(mecanico_id:int, service:ServiceDepends):
+    return service.desativar(mecanico_id)

@@ -27,7 +27,4 @@ class DiagnosticoRepository:
         diagnostico_db.sqlmodel_update(dados_atualizados)
         return self._salvar(diagnostico_db)
 
-    def delete(self, diagnostico_db: Diagnostico) -> None:
-        self.session.delete(diagnostico_db)
-        self.session.commit()
     

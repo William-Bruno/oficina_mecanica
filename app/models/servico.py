@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class ServicoBase(SQLModel):
     descricao: str = Field(min_length=3, max_length=250, index=True)
     preco: float = Field(gt=0, nullable=False)
+    ativo: bool = Field(default=True)
 
 class Servico(ServicoBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -23,6 +24,7 @@ class ServicoCreate(ServicoBase):
 class ServicoUpdate(SQLModel):
     descricao: str | None = None
     preco: float | None = Field(default=None, gt=0)
+    ativo: bool | None = None
 
 class ServicoPublic(ServicoBase):
     id: int

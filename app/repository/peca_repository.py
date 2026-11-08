@@ -21,7 +21,7 @@ class PecaRepository:
         statement = select(Peca).where(Peca.nome == descricao)
         return self.session.exec(statement).first()
 
-    def get_paginado(self, pagina:int=1, tamanho_pagina:int=10,nome:str | None=None,) -> tuple[list[Peca], int]:
+    def get_paginado(self, pagina:int=1, tamanho_pagina:int=10,nome:str | None=None,ativo:bool|None=None) -> tuple[list[Peca], int]:
         consulta = select(Peca)
         consulta_total = select(func.count()).select_from(Peca)
 
@@ -30,6 +30,11 @@ class PecaRepository:
             filtro_nome = Peca.nome.ilike(f"%{nome}%")
             consulta= consulta.where(filtro_nome)
             consulta_total = consulta_total.where(filtro_nome)
+        
+        #Filtro de Ativa/Inativa
+        if ativo is not None:
+            consulta = consulta.where(Peca.ativo == ativo)
+            consulta_total = consulta_total.where(Peca.ativo == ativo)
 
         total_registros = self.session.exec(consulta_total).one()
 
@@ -48,9 +53,13 @@ class PecaRepository:
         dados_db.sqlmodel_update(dados_atualizados)
         return self._salvar(dados_db)
 
-    def delete(self, dados_db:Peca) -> None:
-        self.session.delete(dados_db)
-        self.session.commit()
+    def active(self, dados_db:Peca) -> None:
+        dados_db.ativo = True
+        return self._salvar(dados_db)
+
+    def deactive(self, dados_db:Peca) -> None:
+        dados_db.ativo = False
+        return self._salvar(dados_db)
 
     def rollback(self) -> None:
         self.session.rollback()

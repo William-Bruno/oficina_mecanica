@@ -11,10 +11,10 @@ from app.models.ordem_servico import (
     OrdemServicoUpdate,
     OrdemServicoPage,
     OrdemServicoPublic,
-    OrdemServicoPublicDetalhada
+    OrdemServicoPublicDetalhada,
+    OrdemServicoStatusUpdate
 )
 
-from app.repository.mecanico_repository import MecanicoRepository
 from app.repository.veiculo_repository import VeiculoRepository
 from app.repository.ordem_servico_repository import OrdemServicoRepository
 from app.services.ordem_servico_service import OrdemServicoService
@@ -23,10 +23,10 @@ router = APIRouter(prefix="/ordens-servico", tags=["Ordens de Serviço"])
 
 def get_ordem_servico_service(session: Annotated[Session, Depends(get_session)]) -> OrdemServicoService:
     repo_veiculo = VeiculoRepository(session)
-    repo_mecanico = MecanicoRepository(session)
     repo_ordem_servico = OrdemServicoRepository(session)
     return OrdemServicoService(
-        repository=repo_ordem_servico, veiculo_repository=repo_veiculo, mecanico_repository=repo_mecanico
+        repository=repo_ordem_servico, 
+        veiculo_repository=repo_veiculo,
     )
 
 #Type alias
@@ -39,7 +39,6 @@ def listar_ordens_servico(
     tp: int = Query(default=10, ge=1, le=100, description="Tamanho da página"),
     status: StatusOrdemServico | None = Query(default=None, description="Filtro por status"),
     veiculo_id: int | None = Query(default=None, description="Filtro por ID do veículo"),
-    mecanico_id: int | None = Query(default=None, description="Filtro por ID do mecânico"),
     data_inicio: datetime | None = Query(default=None, description="Data inicial de abertura"),
     data_fim: datetime | None = Query(default=None, description="Data final de abertura"),
 ):
@@ -49,7 +48,6 @@ def listar_ordens_servico(
         tp=tp,
         status=status,
         veiculo_id=veiculo_id,
-        mecanico_id=mecanico_id,
         data_inicio=data_inicio,
         data_fim=data_fim,
     )
@@ -63,6 +61,10 @@ def buscar_ordem_servico_por_id(ordem_servico_id: int, service: ServiceDepends):
 def criar_ordem_servico(dados: OrdemServicoCreate, service: ServiceDepends):
     """Abre/Agenda uma nova Ordem de Serviço."""
     return service.criar(dados)
+
+@router.patch("/{ordem_servico_id}/status", response_model=OrdemServicoPublic)
+def alterar_status_ordem_servico(ordem_servico_id:int, dados: OrdemServicoStatusUpdate, service: ServiceDepends):
+    return service.alterar_status(ordem_servico_id, dados.status)
 
 
 @router.patch("/{ordem_servico_id}",response_model=OrdemServicoPublic,status_code=status.HTTP_200_OK,)

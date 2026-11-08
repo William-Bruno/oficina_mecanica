@@ -19,6 +19,7 @@ logs/
 
 # Variáveis de Bano
 banco.txt
+consultas.txt
 *.db
 *.sqlite
 *.sqlite3

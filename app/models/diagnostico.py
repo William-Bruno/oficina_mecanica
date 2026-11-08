@@ -7,34 +7,38 @@ from app.models.enums import NivelCombustivel
 
 if TYPE_CHECKING:
     from app.models.ordem_servico import OrdemServico
+    from app.models.mecanico import Mecanico
 
 class DiagnosticoBase(SQLModel):
     analise_mecanico: str = Field(min_length=3, max_length=150, nullable=False)
     quilometragem: int = Field(ge=0, default=0, nullable=False)
     avarias_latarias: str = Field(min_length=3, max_length=150, nullable=False)
     nivel_combustivel: NivelCombustivel = Field(default=NivelCombustivel.MEDIO, nullable=False)
-    aprovado_cliente: bool = Field(default=False, nullable=False)
+    mecanico_id:int = Field(foreign_key="mecanico.id", nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", unique=True, nullable=False)
+
 
 class Diagnostico(DiagnosticoBase, table=True):
     id:int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc),sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},)
+    mecanico: "Mecanico" = Relationship(back_populates="diagnosticos")
     ordem_servico: "OrdemServico" = Relationship(back_populates="diagnostico")
+
 
 class DiagnosticoCreate(SQLModel):
     analise_mecanico: str = Field(min_length=3, max_length=150)
     quilometragem: int = Field(ge=0, default=0)
     avarias_latarias: str = Field(min_length=3, max_length=150)
     nivel_combustivel: NivelCombustivel = Field(default=NivelCombustivel.MEDIO)
-    aprovado_cliente: bool = Field(default=True)
+    mecanico_id: int = Field(description="ID do mecanico que realizou o diagnóstico")
 
 class DiagnosticoUpdate(SQLModel):
     analise_mecanico: str |None = None
     quilometragem: int |None = None
     avarias_latarias: str |None = None
     nivel_combustivel: NivelCombustivel |None = None
-    aprovado_cliente: bool | None = None
+    mecanico_id: int | None = None
 
 class DiagnosticoPublic(DiagnosticoBase):
     id:int
