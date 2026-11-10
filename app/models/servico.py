@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime, timezone
+from decimal import Decimal
+from pydantic import field_serializer
 
 from sqlmodel import Field, SQLModel, Relationship
 from app.models.paginacao import Paginacao
@@ -9,7 +11,7 @@ if TYPE_CHECKING:
 
 class ServicoBase(SQLModel):
     descricao: str = Field(min_length=3, max_length=250, index=True)
-    preco: float = Field(gt=0, nullable=False)
+    preco: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     ativo: bool = Field(default=True)
 
 class Servico(ServicoBase, table=True):
@@ -23,13 +25,17 @@ class ServicoCreate(ServicoBase):
 
 class ServicoUpdate(SQLModel):
     descricao: str | None = None
-    preco: float | None = Field(default=None, gt=0)
+    preco: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2)
     ativo: bool | None = None
 
 class ServicoPublic(ServicoBase):
     id: int
     created_at: datetime 
     updated_at: datetime
+
+    @field_serializer("preco")
+    def formatar_valor(self, valor:Decimal)->Decimal:
+        return valor.quantize(Decimal("0.01"))
 
 class ServicoPage(SQLModel):
     dados: list[ServicoPublic]

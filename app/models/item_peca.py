@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class ItemPecaBase(SQLModel):
     quantidade: int = Field(default=1, gt=0)
-    preco_unitario: Decimal = Field(default=Decimal("0.00"), ge=0)
+    preco_unitario: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     aprovado: bool = Field(default=True, nullable=False)
     peca_id: int = Field(foreign_key="peca.id", nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", nullable=False)
@@ -29,12 +29,12 @@ class ItemPeca(ItemPecaBase, table=True):
 class ItemPecaCreate(SQLModel):
     peca_id: int
     quantidade: int = Field(default=1, gt=0)
-    preco_unitario: Decimal = Field(default=Decimal("0.00"), ge=0)
+    preco_unitario: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     aprovado: bool = Field(default=True)
 
 class ItemPecaUpdate(SQLModel):
     quantidade: int | None = None
-    preco_unitario: Decimal | None = None
+    preco_unitario: Decimal | None = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2)
     aprovado: bool | None = None
     peca_id: int | None = None
 

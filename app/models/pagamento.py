@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from app.models.ordem_servico import OrdemServico
 
 class PagamentoBase(SQLModel):
-    valor: Decimal = Field(default=Decimal("0.00"), gt=0, nullable=False)
+    valor: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     forma_pagamento: FormaPagamento = Field(default=FormaPagamento.DINHEIRO, nullable=False)
     ordem_servico_id: int = Field(foreign_key="ordemservico.id", nullable=False)
 
@@ -23,11 +23,11 @@ class Pagamento(PagamentoBase, table=True):
     ordem_servico: "OrdemServico" = Relationship(back_populates="pagamentos")
 
 class PagamentoCreate(SQLModel):
-    valor: Decimal = Field(gt=0)
+    valor: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     forma_pagamento: FormaPagamento = Field(default=FormaPagamento.DINHEIRO)
 
 class PagamentoUpdate(SQLModel):
-    valor: Decimal |None =None
+    valor: Decimal |None = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2)
     forma_pagamento: FormaPagamento | None = None
 
 class PagamentoPublic(PagamentoBase):

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 class ItemServicoBase(SQLModel):
     tempo_hora: int = Field(default=1, gt=0)
-    valor_hora: Decimal = Field(default=Decimal("0.00"), ge=0)
+    valor_hora: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     aprovado: bool = Field(default=True, nullable=False)
     status_execucao: StatusExecucaoItem = Field(default=StatusExecucaoItem.PENDENTE, nullable=False)
     servico_id: int = Field(foreign_key="servico.id", nullable=False)
@@ -35,12 +35,12 @@ class ItemServicoCreate(SQLModel):
     servico_id: int
     mecanico_id:int
     tempo_hora: int = Field(default=1, gt=0)
-    valor_hora: Decimal = Field(default=Decimal("0.00"), ge=0)
+    valor_hora: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     aprovado: bool = Field(default=True)
 
 class ItemServicoUpdate(SQLModel):
     tempo_hora: int | None = None
-    valor_hora: Decimal | None = None
+    valor_hora: Decimal | None = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2)
     aprovado: bool | None = None
     status_execucao: StatusExecucaoItem | None = None
     servico_id: int | None = None

@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 from datetime import datetime, timezone
+from decimal import Decimal
+from pydantic import field_serializer
 
 from sqlmodel import Field, SQLModel, Relationship
 
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
 
 class PecaBase(SQLModel):
     nome: str = Field(min_length=3, max_length=120, index=True)
-    preco: float = Field(gt=0, nullable=False)
+    preco: Decimal = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2, nullable=False)
     ativo: bool = Field(default=True)
 
 class Peca(PecaBase, table=True):
@@ -24,13 +26,17 @@ class PecaCreate(PecaBase):
 
 class PecaUpdate(SQLModel):
     nome: str | None = None
-    preco: float | None = Field(default=None, gt=0)
+    preco: Decimal | None = Field(default=Decimal("0.00"), gt=0, max_digits=10, decimal_places=2)
     ativo: bool | None = None
 
 class PecaPublic(PecaBase):
     id: int
     created_at: datetime 
     updated_at: datetime
+
+    @field_serializer("preco")
+    def formatar_valor(self, valor:Decimal)->Decimal:
+        return valor.quantize(Decimal("0.01"))
 
 class PecaPage(SQLModel):
     dados: list[PecaPublic]

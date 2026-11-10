@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 from datetime import datetime, timezone
+from decimal import Decimal
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.models.enums import StatusOrdemServico
@@ -7,14 +8,12 @@ from app.models.enums import StatusOrdemServico
 from app.models.diagnostico import DiagnosticoPublic
 from app.models.item_servico import ItemServicoPublic
 from app.models.item_peca import ItemPecaPublic
-from app.models.mecanico import MecanicoPublic
 from app.models.pagamento import PagamentoPublic
 from app.models.veiculo import VeiculoClientePublic
 from app.models.paginacao import Paginacao
 
 if TYPE_CHECKING:
     from app.models.veiculo import Veiculo
-    from app.models.mecanico import Mecanico
     from app.models.item_servico import ItemServico
     from app.models.item_peca import ItemPeca
     from app.models.pagamento import Pagamento
@@ -25,7 +24,7 @@ class OrdemServicoBase(SQLModel):
     data_fim: datetime | None = None
     status: StatusOrdemServico = Field(default=StatusOrdemServico.AGENDADA, nullable=False)
     observacao: str = Field(default=None, max_length=150, nullable=False)
-    valor_total: float = Field(default=0.0,ge=0, nullable=False)
+    valor_total: Decimal = Field(default=Decimal("0.00"), max_digits=10, decimal_places=2, nullable=False)
     veiculo_id: int = Field(foreign_key="veiculo.id", nullable=False)
 
 class OrdemServico(OrdemServicoBase, table=True):
@@ -46,7 +45,7 @@ class OrdemServicoUpdate(SQLModel):
     data_fim: datetime | None = None
     status: StatusOrdemServico | None = None
     observacao: str | None = None
-    valor_total: float | None = Field(default=None, ge=0)
+    valor_total: Decimal | None = Field(default=Decimal("0.00"), max_digits=10, decimal_places=2)
     veiculo_id: int | None = None  
 
 class OrdemServicoPublic(OrdemServicoBase):
@@ -61,9 +60,13 @@ class OrdemServicoPublicDetalhada(OrdemServicoPublic):
     itens_pecas: list[ItemPecaPublic] = []
     pagamentos: list[PagamentoPublic] = []
 
+    
+
 class OrdemServicoStatusUpdate(SQLModel):
     status: StatusOrdemServico
 
 class OrdemServicoPage(SQLModel):
     dados:list[OrdemServicoPublic]
     paginacao: Paginacao
+
+
