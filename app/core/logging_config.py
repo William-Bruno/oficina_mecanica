@@ -23,7 +23,7 @@ logging_config["loggers"][NOME_SISTEMA] = logging_config["loggers"].pop("app")
 # Aplica a configuração do YAML
 logging.config.dictConfig(logging_config)
 
-# 🟢 Garante que APENAS o executor de queries fique em INFO
+# Garante que APENAS o executor de queries fique em INFO
 logging.getLogger("sqlalchemy.engine.Engine").setLevel(logging.INFO)
 
 # Silencia inicializadores internos de relacionamentos e mappers

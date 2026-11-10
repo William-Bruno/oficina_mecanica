@@ -40,7 +40,7 @@ logging:
 
 
   loggers:
-    app:  # o nome real do logger vem de app.name (veja logging_config.py)
+    app:
       level: DEBUG
       handlers:
         - console
